@@ -1,0 +1,5 @@
+name: Blätter Formatters
+type: module
+description: Provides custom formatters for Drupal fields
+core: 8.x
+package: Blätter

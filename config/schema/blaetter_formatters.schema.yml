@@ -1,0 +1,13 @@
+field.formatter.settings.blaetter_formatters_inline:
+  type: mapping
+  label: 'Blätter inline formatter settings'
+  mapping:
+    separator:
+      type: string
+      label: 'Separator'
+    prefix:
+      type: string
+      label: 'Prefix'
+    use_links:
+      type: boolean
+      label: 'Use links'

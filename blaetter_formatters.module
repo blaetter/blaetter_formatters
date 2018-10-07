@@ -1,0 +1,68 @@
+<?php
+/**
+ * @file
+ * Contains blaetter_formatters.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help()
+ *
+ * @param string              $route_name  The name of the route
+ * @param RouteMatchInterface $route_match The route match interface object
+ *
+ * @see hook_help()
+ * )
+ * @return void
+ */
+function blaetter_formatters_help(string $route_name, RouteMatchInterface $route_match)
+{
+    switch ($route_name) {
+        // Main module help for the nodeshop module.
+        case 'help.page.blaetter_formatters':
+            $output = '';
+            $output .= '<h3>' . t('About') . '</h3>';
+            $output .= '<p>' . t(
+                'This module adds formatters to Drupal fields. Currently there are the following formatters:'
+            ) . '</p>';
+            $output .= '<ul>';
+            $output .= '<li>' . t(
+              '<strong>Blätter inline formatter</strong>: This formatter takes entity references and displays their ' .
+              'values inline with a configurable seperator. You can also specify an optional prefix and decide, if ' .
+              'values should be linked to its entity pages or not.'
+            ) . '</li>';
+            $output .= '</ul>';
+            return $output;
+        default:
+    }
+}
+
+/**
+ * Implements hook_theme()
+ *
+ * @see hook_theme()
+ *
+ * @return void
+ */
+function blaetter_formatters_theme()
+{
+    return [
+      'blaetter_formatters_inline' => [
+        'template'  => 'blaetter_formatters_inline',
+        'variables' => [
+          'entities'  => [],
+          'separator' => '',
+          'prefix'    => '',
+        ]
+        ],
+      'blaetter_formatters_issue' => [
+        'template' => 'blaetter_formatters_issue',
+        'variables' => [
+          'book_id' => '',
+          'edition' => '',
+          'year' => ''
+        ]
+      ],
+    ];
+}

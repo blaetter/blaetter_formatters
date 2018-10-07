@@ -1,0 +1,18 @@
+{#
+/**
+ * @file blaetter_formatters_issue.html.twig
+ * Displays a link to an edition with information about the issue
+ *
+ * Available variables:
+ * - book_id:
+ * - edition:
+ * - year:
+ *
+ * @ingroup themeable
+ */
+#}
+<div>
+    <div>{{'Edition'|t}}
+        <a href="{{ path('entity.node.canonical', {'node': book_id}) }}">{{ edition }}/{{ year }}</a>
+    </div>
+</div>

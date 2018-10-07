@@ -1,0 +1,14 @@
+{
+    "name": "drupal/blaetter_formatters",
+    "description": "This module adds formatters to the Drupal installation",
+    "type": "drupal-module",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "ambo",
+            "email": "andreas.maengel@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}

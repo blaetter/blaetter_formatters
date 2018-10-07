@@ -1,0 +1,19 @@
+{#
+/**
+ * @file blaetter_formatters_inline.html.twig
+ * Displays entity references inline with configurable seperators and optional prefix
+ *
+ * Available variables:
+ * - entities: The entities, that needs to be displayed, might be linked inside
+ * - separator: The separator to use
+ * - prefix: The optional prefix to use - This is displayed because of standard entity reference rendering.
+ *
+ * @ingroup themeable
+ */
+#}
+{% set count = entities | length %}
+{% set current = 0 %}
+{% for entity in entities %}
+  {% set current = current + 1 %}
+{{ entity }}{% if current < count %}{{ separator }}{% endif %}
+{% endfor %}
