@@ -73,8 +73,8 @@ class InlineFormatter extends EntityReferenceFormatterBase
             '#title' => $this->t('Decide, if the referenced entities should be linked or not.'),
             '#type' => 'select',
             '#options' => [
-                1 => $this->t('Use links'),
-                0 => $this->t('Do not use links'),
+                '1' => $this->t('Use links'),
+                '0' => $this->t('Do not use links'),
             ],
             '#default_value' => $this->getSetting('use_links'),
         ];
@@ -95,7 +95,7 @@ class InlineFormatter extends EntityReferenceFormatterBase
             $label = $entity->label();
             // If the link is to be displayed and the entity has a uri, display a
             // link.
-            if ($output_as_link && !$entity->isNew()) {
+            if ('1' == $output_as_link && !$entity->isNew()) {
                 try {
                     $uri = $entity->urlInfo();
                 } catch (UndefinedLinkTemplateException $e) {
