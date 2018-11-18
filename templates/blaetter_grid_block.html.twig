@@ -1,0 +1,38 @@
+{#
+/**
+ * @file blaetter_grid_block.html.twig
+ * Displays a grid block with the specified grid and the given content
+ *
+ * Available variables:
+ * - grid_class_left: The class for the left side
+ * - grid_class_right: The class for the right side
+ * - title: The optional title for the whole block
+ * - title_left: The optional title for the left side
+ * - content_left: The content that is rendered on the left side
+ * - title_right: The optional title for the right side
+ * - content_right: The content that is rendered on the right side
+ *
+ * @ingroup themeable
+ */
+#}
+{% if title %}
+<h2 class="heading--sectiontitle red">{{ title }}</h2>
+{% endif %}
+<div class="grid">
+    <div class="grid__item {{grid_class_left}}">
+        {% if title_left and title %}
+            <h3 class="heading--sectiontitle red">{{ title_left }}</h3>
+        {% elseif title_left %}
+            <h2 class="heading--sectiontitle red">{{ title_left }}</h2>
+        {% endif %}
+        {{ content_left }}
+    </div>
+    <div class="grid__item {{grid_class_right}}">
+        {% if title_right and title %}
+            <h3 class="heading--sectiontitle red">{{ title_right }}</h3>
+        {% elseif title_right %}
+            <h2 class="heading--sectiontitle red">{{ title_right }}</h2>
+        {% endif %}
+        {{ content_right }}
+    </div>
+</div>

@@ -64,5 +64,23 @@ function blaetter_formatters_theme()
           'year' => ''
         ]
       ],
+      'blaetter_grid_block' => [
+        'template' => 'blaetter_grid_block',
+        'variables' => [
+          'grid_class_left' => '',
+          'grid_class_right' => '',
+          'title' => '',
+          'title_left' => '',
+          'content_left' => '',
+          'title_right' => '',
+          'content_right' => '',
+        ]
+      ],
+      'blaetter_grid_block_title' => [
+        'template' => 'blaetter_grid_block_title',
+        'variables' => [
+          'title' => '',
+        ]
+      ]
     ];
 }
