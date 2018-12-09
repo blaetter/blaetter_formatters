@@ -66,6 +66,7 @@ class IssueFormatter extends FormatterBase
                 ];
             }
         }
+        return [];
     }
 
     /**
