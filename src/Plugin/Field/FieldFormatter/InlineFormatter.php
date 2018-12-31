@@ -119,7 +119,9 @@ class InlineFormatter extends EntityReferenceFormatterBase
             }
             $entities[$delta]['#cache']['tags'] = $entity->getCacheTags();
         }
-
+        if (empty($entities)) {
+            return [];
+        }
         $element[] = [
             '#theme' => 'blaetter_formatters_inline',
             '#entities'   => $entities,
