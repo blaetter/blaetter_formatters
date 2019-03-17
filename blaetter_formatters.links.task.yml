@@ -1,0 +1,5 @@
+blaetter_formatters.entity.user.logout:
+  title: 'Log out'
+  route_name: user.logout
+  weight: 8000
+  base_route: entity.user.canonical
