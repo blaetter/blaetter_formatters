@@ -236,9 +236,14 @@ class GridBlock extends BlockBase
                 $view_title = $view->getTitle();
                 // Render.
                 $render_content = $view->render();
+                // we put the content of #title into a seperate #markup to let
+                // drupal escape unsafe html, but allow things like links to
+                // be added in the corresponding views and blocks.
                 $render_title = [
                   '#theme' => 'blaetter_grid_block_title',
-                  '#title' => $this->t('@title', ['@title'=> $view_title]),
+                  '#title' => [
+                    '#markup' => $view->getTitle(),
+                  ]
                 ];
 
                 $build[] = [
