@@ -4,22 +4,23 @@
  * Displays a grid block with the specified grid and the given content
  *
  * Available variables:
-
+ * - embed - The embed array containing all information about the embed.
  *
  * @ingroup themeable
  */
 #}
-{% if embed_url %}
-  {% if 'y' == privacy %}
-    <div class="block--white blaetter-embed embed--{{ provider_slug }}"
-      data-embedurl="{{ embed_url }}"
-      data-title="{{ embed_title }}"
-      data-provider="{{ provider }}"
-      aria-label="{{ 'Placeholder for embedding content from' |t }} {{ provider }}"
+{% if embed.url %}
+  {% if 'y' == embed.privacy %}
+    <div class="block--white blaetter-embed embed--{{ embed.provider_slug }}"
+      data-embedurl="{{ embed.url }}"
+      data-title="{{ embed.title }}"
+      data-provider="{{ embed.provider }}"
+      data-styles="{{ embed.styles }}"
+      aria-label="{{ 'Placeholder for embedding content from' |t }} {{ embed.provider }}"
     >
       <p class="text">
     {% trans %}
-      This embed displays content from <strong>{{ provider }}</strong> who might be processing your data.
+      This embed displays content from <strong>{{ embed.provider }}</strong> who might be processing your data.
       If you agree with that, you can show the content by clicking on the button below.<br />
       <strong>Hint:</strong> You need to have JavaScript enabled in order to access this content.
     {% endtrans %}
@@ -31,9 +32,9 @@
       frameborder="0"
       height="auto"
       scrolling="no"
-      src="{{ embed_url }}"
-      style="width:100%;border:0"
-      title="{{ embed_title }}"
+      src="{{ embed.url }}"
+      style="width:100%;{{ embed.styles }}"
+      title="{{ embed.title }}"
     ></iframe>
   {% endif %}
 {% endif %}

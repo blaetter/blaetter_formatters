@@ -83,8 +83,18 @@ class EmbedBlock extends BlockBase
             ],
             '#default_value' => $this->configuration['privacy'],
             '#size'         => 1,
-            '#weight'       => '20',
+            '#weight'       => '30',
             '#required'     => true,
+        ];
+        $form['embed_settings']['additional_styles'] = [
+          '#type'         => 'textfield',
+          '#title'        => $this->t('additional styles'),
+          '#description'  => $this->t('Please add further styles wich will be placed within the iframes styles.'),
+          '#default_value' => $this->configuration['additional_styles'],
+          '#maxlength'    => 256,
+          '#size'         => 64,
+          '#weight'       => '40',
+          '#required'     => true,
         ];
 
         return $form;
@@ -98,6 +108,7 @@ class EmbedBlock extends BlockBase
         $this->configuration['embed_url'] = $form_state->getValue(['embed_settings', 'embed_url']);
         $this->configuration['provider'] = $form_state->getValue(['embed_settings', 'provider']);
         $this->configuration['privacy'] = $form_state->getValue(['embed_settings', 'privacy']);
+        $this->configuration['additional_styles'] = $form_state->getValue(['embed_settings', 'additional_styles']);
     }
 
     /**
@@ -105,22 +116,19 @@ class EmbedBlock extends BlockBase
      */
     public function build()
     {
-        // set default variables;
-        $title = '';
-        if ('visible' == $this->configuration['label_display']) {
-            $title = $this->configuration['label'];
-        }
+        $embed = [];
+        $embed['title']     = $this->configuration['label'];
+        $embed['url']       = $this->configuration['embed_url'];
+        $embed['privacy']   = $this->configuration['privacy'];
+        $embed['provider']  = $this->provider[
+          $this->configuration['provider']
+        ];
+        $embed['provider_slug'] = $this->configuration['provider'];
+        $embed['styles']    = $this->configuration['additional_styles'];
 
         $build = [
             '#theme'        => 'blaetter_embed_block',
-            '#title'        => $title,
-            '#embed_title' => $this->configuration['label'],
-            '#embed_url'    => $this->configuration['embed_url'],
-            '#privacy'      => $this->configuration['privacy'],
-            '#provider'     => $this->provider[
-              $this->configuration['provider']
-            ],
-            '#provider_slug'=> $this->configuration['provider'],
+            '#embed'        => $embed,
             '#attached' => [
               'library' => [
                 'blaetter_formatters/embed_block',

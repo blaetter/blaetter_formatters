@@ -15,7 +15,7 @@ jQuery(document).ready(function () {
         var iframe = jQuery('<iframe></iframe>');
         iframe.attr('src', parent.attr('data-embedurl'));
         iframe.attr('title', parent.attr('data-title'));
-        iframe.attr('style', 'width:100%;');
+        iframe.attr('style', 'width:100%;' + parent.attr('data-styles'));
         iframe.attr('frameborder', '0');
         iframe.attr('height', 'auto');
         iframe.attr('scrolling', 'no');

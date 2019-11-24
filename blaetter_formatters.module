@@ -51,12 +51,7 @@ function blaetter_formatters_theme()
       'blaetter_embed_block' => [
         'template'  => 'blaetter_embed_block',
         'variables' => [
-          'title'         => '',
-          'embed_title'   => '',
-          'embed_url'     => '',
-          'provider'      => '',
-          'provider_slug' => '',
-          'privacy'       => '',
+          'embed'         => [],
         ]
       ],
       'blaetter_formatters_inline' => [
