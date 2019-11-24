@@ -94,7 +94,6 @@ class EmbedBlock extends BlockBase
           '#maxlength'    => 256,
           '#size'         => 64,
           '#weight'       => '40',
-          '#required'     => true,
         ];
 
         return $form;
