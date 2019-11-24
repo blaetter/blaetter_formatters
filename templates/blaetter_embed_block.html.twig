@@ -1,0 +1,39 @@
+{#
+/**
+ * @file blaetter_grid_block.html.twig
+ * Displays a grid block with the specified grid and the given content
+ *
+ * Available variables:
+
+ *
+ * @ingroup themeable
+ */
+#}
+{% if embed_url %}
+  {% if 'y' == privacy %}
+    <div class="block--white blaetter-embed embed--{{ provider_slug }}"
+      data-embedurl="{{ embed_url }}"
+      data-title="{{ embed_title }}"
+      data-provider="{{ provider }}"
+      aria-label="{{ 'Placeholder for embedding content from' |t }} {{ provider }}"
+    >
+      <p class="text">
+    {% trans %}
+      This embed displays content from <strong>{{ provider }}</strong> who might be processing your data.
+      If you agree with that, you can show the content by clicking on the button below.<br />
+      <strong>Hint:</strong> You need to have JavaScript enabled in order to access this content.
+    {% endtrans %}
+      </p>
+      <button class="button blaetter-embed-consent">{{ 'Click here to accept and view the content.' |t }}</button>
+    </div>
+  {% else %}
+    <iframe
+      frameborder="0"
+      height="auto"
+      scrolling="no"
+      src="{{ embed_url }}"
+      style="width:100%;border:0"
+      title="{{ embed_title }}"
+    ></iframe>
+  {% endif %}
+{% endif %}

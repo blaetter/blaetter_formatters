@@ -242,7 +242,7 @@ class GridBlock extends BlockBase
                 $render_title = [
                   '#theme' => 'blaetter_grid_block_title',
                   '#title' => [
-                    '#markup' => $view->getTitle(),
+                    '#markup' => $view_title,
                   ]
                 ];
 

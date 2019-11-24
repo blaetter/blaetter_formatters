@@ -1,0 +1,6 @@
+embed_block:
+  js:
+    js/blaetter_embed.js: {}
+  dependencies:
+    - core/jquery
+

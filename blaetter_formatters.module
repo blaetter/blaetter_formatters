@@ -48,6 +48,17 @@ function blaetter_formatters_help(string $route_name, RouteMatchInterface $route
 function blaetter_formatters_theme()
 {
     return [
+      'blaetter_embed_block' => [
+        'template'  => 'blaetter_embed_block',
+        'variables' => [
+          'title'         => '',
+          'embed_title'   => '',
+          'embed_url'     => '',
+          'provider'      => '',
+          'provider_slug' => '',
+          'privacy'       => '',
+        ]
+      ],
       'blaetter_formatters_inline' => [
         'template'  => 'blaetter_formatters_inline',
         'variables' => [
