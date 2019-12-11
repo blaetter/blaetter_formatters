@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\blaetter_formatters\Plugin\Media\Source;
+namespace Drupal\blaetter_formatters\Plugin\media\Source;
 
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaSourceBase;
