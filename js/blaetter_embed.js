@@ -8,6 +8,20 @@ jQuery(document).ready(function () {
     })
   }
 
+  if (jQuery("button.blaetter-media-consent").length > 0) {
+    jQuery("button.blaetter-media-consent").each(function(index) {
+      jQuery(this).click(function(index) {
+        var parent = jQuery(this).parent();
+        var iframe = JSON.parse(parent.attr('data-content'));
+        if (parent.parent().hasClass('video-container-inactive')) {
+          parent.parent().addClass('video-container');
+          parent.parent().removeClass('video-container-inactive');
+        }
+        parent.replaceWith(iframe);
+      })
+    });
+  }
+
   if (jQuery("button.blaetter-embed-consent").length > 0) {
     jQuery("button.blaetter-embed-consent").each(function(index) {
       jQuery(this).click(function(index) {
@@ -27,4 +41,5 @@ jQuery(document).ready(function () {
       })
     });
   }
+
 });

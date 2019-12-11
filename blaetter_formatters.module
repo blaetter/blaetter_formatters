@@ -4,7 +4,9 @@
  * Contains blaetter_formatters.module.
  */
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Implements hook_help()
@@ -89,4 +91,35 @@ function blaetter_formatters_theme()
         ]
       ]
     ];
+}
+
+/**
+ * Set dynamic allowed values for the provider field of the media type oembed.
+ *
+ * @param \Drupal\field\Entity\FieldStorageConfig $definition
+ *   The field definition.
+ * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
+ *   The entity being created if applicable.
+ * @param bool $cacheable
+ *   Boolean indicating if the results are cacheable.
+ *
+ * @return array
+ *   An array of possible key and value options.
+ *
+ * @see options_allowed_values()
+ */
+function blaaetter_formatters_allowed_media_providers(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
+  $options = [];
+  if (null !== $entity && 'generic_iframe' == $entity->bundle()) {
+    $options = [
+      'Detektor.fm' => 'Detektor.fm',
+      'Google Maps' => 'Google Maps',
+    ];
+  } elseif (null !== $entity && 'remote_video' == $entity->bundle()) {
+    $options = [
+      'YouTube' => 'YouTube',
+      'Vimeo' => 'Vimeo',
+    ];
+  }
+  return $options;
 }
