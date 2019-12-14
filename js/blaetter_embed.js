@@ -18,7 +18,10 @@ jQuery(document).ready(function () {
           parent.parent().removeClass('video-container-inactive');
         }
         parent.replaceWith(iframe);
-      })
+      });
+      if (Drupal.eu_cookie_compliance.hasAgreed('external')) {
+        jQuery(this).trigger('click');
+      }
     });
   }
 
@@ -38,7 +41,10 @@ jQuery(document).ready(function () {
           parent.parent().removeClass('video-container-inactive');
         }
         parent.replaceWith(iframe);
-      })
+      });
+      if (Drupal.eu_cookie_compliance.hasAgreed('external')) {
+        jQuery(this).trigger('click');
+      }
     });
   }
 
