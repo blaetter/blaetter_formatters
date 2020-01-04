@@ -64,9 +64,9 @@ class GridBlock extends BlockBase
             '#type' => 'textarea',
             '#title' => $this->t('Block IDs'),
             '#description' => $this->t(
-                'Add block IDs (e.g. block_1) or views names and display IDs separated by a colon (e.g. ' .
-                'my_view:block_1) to display on the left side, one per line.'
-            ),
+                'Add blocks via block|BLOCK_ID, content blocks via content|CONTENT_BLOCK_ID or view names and ' .
+                'display IDs separated by a colon (e.g. my_view:block_1) to display on the right side, one per line.'
+          ),
             '#default_value' => $this->configuration['left_block_ids'],
             '#weight' => '0',
         ];
@@ -89,8 +89,8 @@ class GridBlock extends BlockBase
             '#type' => 'textarea',
             '#title' => $this->t('Block IDs'),
             '#description' => $this->t(
-                'Add block IDs (e.g. block_1) or views names and display IDs separated by a colon (e.g. ' .
-                'my_view:block_1) to display on the right side, one per line.'
+                'Add blocks via block|BLOCK_ID, content blocks via content|CONTENT_BLOCK_ID or view names and ' .
+                'display IDs separated by a colon (e.g. my_view:block_1) to display on the right side, one per line.'
             ),
             '#default_value' => $this->configuration['right_block_ids'],
             '#weight' => '0',
@@ -250,9 +250,19 @@ class GridBlock extends BlockBase
                     'title' => $render_title,
                     'content' => $render_content,
                 ];
-            } else {
+            } elseif (false !== strpos($block_id, 'block|')) {
                 try {
-                    $block = \Drupal\block_content\Entity\BlockContent::load(trim($block_id));
+                    $block_id_pieces = explode('|', trim($block_id));
+                    $block = \Drupal\block\Entity\Block::load($block_id_pieces[1]);
+                    $render = \Drupal::entityTypeManager()->getViewBuilder('block')->view($block);
+                    $build[] = $render;
+                } catch (\Throwable $th) {
+                    \Drupal::logger('blaetter_formatters')->error('Error while rendereing a block in a grid block');
+                }
+            } elseif (false !== strpos($block_id, 'content|')) {
+                try {
+                    $block_id_pieces = explode('|', trim($block_id));
+                    $block = \Drupal\block_content\Entity\BlockContent::load($block_id_pieces[1]);
                     $render = \Drupal::entityTypeManager()->getViewBuilder('block_content')->view($block);
                     $build[] = $render;
                 } catch (\Throwable $th) {
