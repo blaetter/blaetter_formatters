@@ -59,9 +59,9 @@ function blaetter_formatters_theme()
       'blaetter_formatters_inline' => [
         'template'  => 'blaetter_formatters_inline',
         'variables' => [
-          'entities'  => [],
-          'separator' => '',
-          'prefix'    => '',
+          'entities'      => [],
+          'separator'     => '',
+          'prefix'        => '',
         ]
         ],
       'blaetter_formatters_issue' => [
@@ -69,7 +69,11 @@ function blaetter_formatters_theme()
         'variables' => [
           'book_id' => '',
           'edition' => '',
-          'year' => ''
+          'year' => '',
+          'display_pages' => '',
+          'page_from'     => '',
+          'page_to'       => '',
+          'issue_prefix'        => ''
         ]
       ],
       'blaetter_grid_block' => [

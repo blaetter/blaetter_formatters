@@ -7,12 +7,16 @@
  * - book_id:
  * - edition:
  * - year:
+ * - issue_prefix
+ * - display_pages
+ * - page_from
+ * - page_to
  *
  * @ingroup themeable
  */
 #}
 <div class="articleinfo">
-    <div>{{'Edition'|t}}
-        <a href="{{ path('entity.node.canonical', {'node': book_id}) }}">{{ edition }}/{{ year }}</a>
+    <div>{{ issue_prefix }}
+        <a href="{{ path('entity.node.canonical', {'node': book_id}) }}">{{ edition }}/{{ year }}</a>{% if display_pages %}, S. {{ page_from }} - {{ page_to }}{% endif %}
     </div>
 </div>

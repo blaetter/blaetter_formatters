@@ -32,6 +32,45 @@ class IssueFormatter extends FormatterBase
 
         return $summary;
     }
+    /**
+     * {@inheritdoc}
+     */
+    public static function defaultSettings()
+    {
+        return [
+            // Declare a settings and default values
+            'prefix' => '',
+            'display_pages' => false,
+        ] + parent::defaultSettings();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function settingsForm(array $form, FormStateInterface $form_state)
+    {
+        $elements = [];
+        $elements['prefix'] = [
+            '#title' => $this->t('Prefix'),
+            '#title' => $this->t('Choose an optional prefix that is displayed right before the inline elements.'),
+            '#type' => 'textfield',
+            '#maxlength'        => 64,
+            '#size'             => 64,
+            '#default_value' => $this->getSetting('prefix'),
+        ];
+        $elements['display_pages'] = [
+            '#title' => $this->t('display pages'),
+            '#title' => $this->t('Decide, if the pages should also be displayed behind the issue.'),
+            '#type' => 'select',
+            '#options' => [
+                '1' => $this->t('display pages'),
+                '0' => $this->t('do not display pages'),
+            ],
+            '#default_value' => $this->getSetting('display_pages'),
+        ];
+
+        return $elements;
+    }
 
     /**
      * Implementation of viewElements
@@ -50,19 +89,36 @@ class IssueFormatter extends FormatterBase
      */
     public function viewElements(FieldItemListInterface $items, $langcode)
     {
-        $node = \Drupal::routeMatch()->getParameter('node');
+        $node = $items->getEntity();
         if ($node && !empty($node->book) && $node->id !== $node->book['bid']) {
             $book = \Drupal::entityTypeManager()->getStorage('node')->load($node->book['bid']);
-            if ($book && $book->hasField('field_ausgabe') && $book->hasField('field_jahr')) {
+            if ($book
+              && $book->hasField('field_ausgabe')
+              && $book->hasField('field_jahr')
+              && null !== $book->get('field_ausgabe')->entity
+              && null !== $book->get('field_jahr')->entity
+            ) {
                 // get the edition
                 $edition = $this->editionToMonth($book->get('field_ausgabe')->entity->getName());
                 $year = $book->get('field_jahr')->entity->getName();
 
+                if (true == $this->getSetting('display_pages')
+                  && $node->hasField('field_seite_von')
+                  && $node->hasField('field_seite_bis')
+                ) {
+                  $page_from = $node->get('field_seite_von')->value;
+                  $page_to = $node->get('field_seite_bis')->value;
+                }
+
                 return [
-                    '#theme' => 'blaetter_formatters_issue',
-                    '#edition' => $edition,
-                    '#year' => $year,
-                    '#book_id' => $book->id(),
+                    '#theme'          => 'blaetter_formatters_issue',
+                    '#edition'        => $edition,
+                    '#year'           => $year,
+                    '#book_id'        => $book->id(),
+                    '#issue_prefix'   => $this->getSetting('prefix') ?: $this->t('Edition'),
+                    '#display_pages'  => $this->getSetting('display_pages'),
+                    '#page_from'      => $page_from,
+                    '#page_to'        => $page_to
                 ];
             }
         }
