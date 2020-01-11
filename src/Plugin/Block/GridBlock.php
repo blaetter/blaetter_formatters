@@ -41,7 +41,7 @@ class GridBlock extends BlockBase
                 '1:3' => $this->t('1:3'),
                 '3:1' => $this->t('3:1'),
                 '2:1' => $this->t('2:1')],
-            '#default_value' => $this->configuration['grid_option'],
+            '#default_value' => $this->configuration['grid_option'] ?? '',
             '#size' => 1,
             '#weight' => '20',
         ];
@@ -55,7 +55,7 @@ class GridBlock extends BlockBase
             '#type' => 'textfield',
             '#title' => $this->t('Title'),
             '#description' => $this->t('The optional title for the left side'),
-            '#default_value' => $this->configuration['left_title'],
+            '#default_value' => $this->configuration['left_title'] ?? '',
             '#maxlength' => 64,
             '#size' => 64,
             '#weight' => '0',
@@ -66,8 +66,8 @@ class GridBlock extends BlockBase
             '#description' => $this->t(
                 'Add blocks via block|BLOCK_ID, content blocks via content|CONTENT_BLOCK_ID or view names and ' .
                 'display IDs separated by a colon (e.g. my_view:block_1) to display on the right side, one per line.'
-          ),
-            '#default_value' => $this->configuration['left_block_ids'],
+            ),
+            '#default_value' => $this->configuration['left_block_ids'] ?? '',
             '#weight' => '0',
         ];
         $form['right_side'] = [
@@ -80,7 +80,7 @@ class GridBlock extends BlockBase
             '#type' => 'textfield',
             '#title' => $this->t('Title'),
             '#description' => $this->t('Optional title for the right side'),
-            '#default_value' => $this->configuration['right_title'],
+            '#default_value' => $this->configuration['right_title'] ?? '',
             '#maxlength' => 64,
             '#size' => 64,
             '#weight' => '0',
@@ -92,7 +92,7 @@ class GridBlock extends BlockBase
                 'Add blocks via block|BLOCK_ID, content blocks via content|CONTENT_BLOCK_ID or view names and ' .
                 'display IDs separated by a colon (e.g. my_view:block_1) to display on the right side, one per line.'
             ),
-            '#default_value' => $this->configuration['right_block_ids'],
+            '#default_value' => $this->configuration['right_block_ids'] ?? '',
             '#weight' => '0',
         ];
 
