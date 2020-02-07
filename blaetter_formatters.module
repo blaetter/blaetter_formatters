@@ -127,3 +127,53 @@ function blaaetter_formatters_allowed_media_providers(FieldStorageConfig $defini
   }
   return $options;
 }
+
+
+/**
+ * implements hook_mail_alter()
+ * @author Paul Reny
+ * @author Christoph Heger
+ * @author Andreas Mängel
+ * Custom format the contact us form, otherwise it's full of nbsp terribleness
+ */
+function blaetter_formatters_mail_alter(&$message) {
+  // only alter contact forms
+  if (!empty($message['id']) && $message['id'] == 'contact_page_mail') {
+
+      // get the contact message object
+      $contact_message = $message['params']['contact_message'];
+      // get the senders user object
+      $sender = $message['params']['sender'];
+
+      // check if we have a category and set up the subject if so
+      if ($contact_message->hasField('field_category') && !empty($contact_message->get('field_category')->value)) {
+        $message['subject'] = str_replace(
+          'Website-Feedback',
+          $contact_message->get('field_category')->value,
+          $message['subject']
+        );
+      }
+
+      // empty the body
+      $message['body'] = [];
+
+      // get the fields and rebuild the body
+      $fields = $contact_message->getFields();
+      $new_body = '';
+      $new_body .= $contact_message->get('name')->value . ' hat folgende Nachricht über das Kontaktformular auf ' .
+        'https://www.blaetter.de/contact geschickt:' . PHP_EOL . PHP_EOL;
+      $new_body .= $contact_message->get('message')->value . PHP_EOL . PHP_EOL;
+
+      foreach ($fields as $field_name => $field) {
+          // as we use the category for the subject, there is no need to display it again here.
+          if ('field_category' == $field_name) {
+            continue;
+          }
+          if (get_class($field->getFieldDefinition()) == 'Drupal\field\Entity\FieldConfig') {
+              $new_body .= $field->getFieldDefinition()->label() . ':' . PHP_EOL .
+                  $contact_message->get($field_name)->value . PHP_EOL . PHP_EOL;
+          }
+      }
+      $message['body'][] = $new_body;
+  }
+}
