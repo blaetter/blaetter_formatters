@@ -41,6 +41,7 @@ class IssueFormatter extends FormatterBase
             // Declare a settings and default values
             'prefix' => '',
             'display_pages' => false,
+            'extra_styles' => '',
         ] + parent::defaultSettings();
     }
 
@@ -67,6 +68,16 @@ class IssueFormatter extends FormatterBase
                 '0' => $this->t('do not display pages'),
             ],
             '#default_value' => $this->getSetting('display_pages'),
+        ];
+        $elements['extra_styles'] = [
+          '#title' => $this->t('extra styles'),
+          '#title' => $this->t('Choose extra styling options for this field.'),
+          '#type' => 'select',
+          '#options' => [
+              '' => $this->t('none'),
+              'info--big' => $this->t('Big font size'),
+          ],
+          '#default_value' => $this->getSetting('extra_styles'),
         ];
 
         return $elements;
@@ -118,7 +129,8 @@ class IssueFormatter extends FormatterBase
                     '#issue_prefix'   => $this->getSetting('prefix') ?: $this->t('Edition'),
                     '#display_pages'  => $this->getSetting('display_pages'),
                     '#page_from'      => $page_from,
-                    '#page_to'        => $page_to
+                    '#page_to'        => $page_to,
+                    '#extra_styles'   => $this->getSetting('extra_styles')
                 ];
             }
         }
