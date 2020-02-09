@@ -139,7 +139,11 @@ function blaaetter_formatters_allowed_media_providers(FieldStorageConfig $defini
  */
 function blaetter_formatters_mail_alter(&$message) {
   // only alter contact forms
-  if (!empty($message['id']) && $message['id'] == 'contact_page_mail') {
+  if (!empty($message['id'])
+    && (
+      $message['id'] == 'contact_page_mail' || $message['id'] == 'contact_page_copy'
+    )
+  ) {
 
       // get the contact message object
       $contact_message = $message['params']['contact_message'];
@@ -161,8 +165,15 @@ function blaetter_formatters_mail_alter(&$message) {
       // get the fields and rebuild the body
       $fields = $contact_message->getFields();
       $new_body = '';
-      $new_body .= $contact_message->get('name')->value . ' hat folgende Nachricht über das Kontaktformular auf ' .
+
+      if ('contact_page_mail' == $message['id']) {
+        $new_body .= $contact_message->get('name')->value . ' hat folgende Nachricht über das Kontaktformular auf ' .
         'https://www.blaetter.de/contact geschickt:' . PHP_EOL . PHP_EOL;
+      } elseif ('contact_page_copy' == $message['id']) {
+        $new_body .= 'Hallo ' . $contact_message->get('name')->value . ',' . PHP_EOL . PHP_EOL;
+        $new_body .= 'vielen Dank für Ihre Anfrage, wir haben folgende Nachricht von Ihnen erhalten: ' . PHP_EOL . PHP_EOL;
+      }
+
       $new_body .= $contact_message->get('message')->value . PHP_EOL . PHP_EOL;
 
       foreach ($fields as $field_name => $field) {
@@ -175,6 +186,8 @@ function blaetter_formatters_mail_alter(&$message) {
                   $contact_message->get($field_name)->value . PHP_EOL . PHP_EOL;
           }
       }
+      $new_body .= '==' . PHP_EOL;
+      $new_body .= 'Ihre »Blätter«' . PHP_EOL;
       $message['body'][] = $new_body;
   }
 }
