@@ -147,8 +147,6 @@ function blaetter_formatters_mail_alter(&$message) {
 
       // get the contact message object
       $contact_message = $message['params']['contact_message'];
-      // get the senders user object
-      $sender = $message['params']['sender'];
 
       // check if we have a category and set up the subject if so
       if ($contact_message->hasField('field_category') && !empty($contact_message->get('field_category')->value)) {
@@ -186,8 +184,15 @@ function blaetter_formatters_mail_alter(&$message) {
                   $contact_message->get($field_name)->value . PHP_EOL . PHP_EOL;
           }
       }
-      $new_body .= '==' . PHP_EOL;
-      $new_body .= 'Ihre »Blätter«' . PHP_EOL;
+
+      // add a footer for mails sended to the user in copy
+      if ('contact_page_copy' == $message['id']) {
+        $new_body .= '--' . PHP_EOL . PHP_EOL;
+        $new_body .= 'Haben Sie vielen Dank für Ihre Mitteilung an den Blätter-Bestellservice.' . PHP_EOL;
+        $new_body .= 'Wir haben die Nachricht erhalten und bemühen uns, diese schnellstmöglich' . PHP_EOL;
+        $new_body .= 'zu beantworten. In dringenden Fällen können Sie uns auch telefonisch' . PHP_EOL;
+        $new_body .= 'erreichen: 030/30883644.' . PHP_EOL;
+      }
       $message['body'][] = $new_body;
   }
 }
