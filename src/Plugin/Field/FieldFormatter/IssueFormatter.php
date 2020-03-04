@@ -113,12 +113,14 @@ class IssueFormatter extends FormatterBase
                 $edition = $this->editionToMonth($book->get('field_ausgabe')->entity->getName());
                 $year = $book->get('field_jahr')->entity->getName();
 
+                $page_from = $page_to = null;
+
                 if (true == $this->getSetting('display_pages')
                   && $node->hasField('field_seite_von')
                   && $node->hasField('field_seite_bis')
                 ) {
-                  $page_from = $node->get('field_seite_von')->value;
-                  $page_to = $node->get('field_seite_bis')->value;
+                    $page_from = $node->get('field_seite_von')->value;
+                    $page_to = $node->get('field_seite_bis')->value;
                 }
 
                 return [
