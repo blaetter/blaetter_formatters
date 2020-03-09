@@ -1,0 +1,45 @@
+{#
+/**
+ * @file blaetter_socialmedia_block.html.twig
+ * Displays a block with the specified socialmedia links
+ *
+ * Available variables:
+ * - socialmedia - The embed array containing all information about the embed.
+ *
+ * @ingroup themeable
+ */
+#}
+{% if socialmedia.provider %}
+<div class="block block--white teaser--socialmedia">
+  {% if socialmedia.provider.twitter %}
+  <a title="Twitter" href="https://twitter.com/blaetter">
+    <img title="" src="/modules/contrib/blaetter_formatters/images/smb_twitter.svg" alt="" />
+  </a>
+  {% endif %}
+  {% if socialmedia.provider.facebook %}
+  <a title="Facebook" href="https://www.facebook.com/blaetterverlag/">
+    <img title="" src="/modules/contrib/blaetter_formatters/images/smb_facebook.svg" alt="" />
+  </a>
+  {% endif %}
+  {% if socialmedia.provider.instagram %}
+  <a title="Instagram" href="https://www.instagram.com/blaetterpolitik/">
+    <img title="" src="/modules/contrib/blaetter_formatters/images/smb_instagram.svg" alt="" />
+  </a>
+  {% endif %}
+  {% if socialmedia.provider.youtube %}
+  <a title="YouTube" href="https://www.youtube.com/channel/UC7tk4kd7QSVW_Dk8Mp6pJ6Q">
+    <img title="" src="/modules/contrib/blaetter_formatters/images/smb_youtube.svg" alt="" />
+  </a>
+  {% endif %}
+  {% if socialmedia.provider.newsletter %}
+  <a title="Newsletter" href="https://listen.jpberlin.de/mailman/listinfo/blaetter_newsletter">
+    <img title="" src="/modules/contrib/blaetter_formatters/images/smb_email.svg" alt="" />
+  </a>
+  {% endif %}
+  {% if socialmedia.provider.rss %}
+  <a title="RSS" href="https://www.blaetter.de/rss.xml">
+    <img title="" src="/modules/contrib/blaetter_formatters/images/smb_rss.svg" alt="" />
+  </a>
+  {% endif %}
+</div>
+{% endif %}

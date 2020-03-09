@@ -94,6 +94,12 @@ function blaetter_formatters_theme()
         'variables' => [
           'title'         => '',
         ]
+      ],
+      'blaetter_socialmedia_block' => [
+        'template'  => 'blaetter_socialmedia_block',
+        'variables' => [
+          'socialmedia'         => [],
+        ]
       ]
     ];
 }
