@@ -51,6 +51,17 @@ class SocialMediaBlock extends BlockBase
             ],
             '#required'     => true,
         ];
+        $form['socialmedia_settings']['box_layout'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Box Layout'),
+          '#description' => $this->t('Select desired box layout option.'),
+          '#options' => [
+              'block' => $this->t('transparent background'),
+              'block block--white' => $this->t('white background')],
+          '#default_value' => $this->configuration['block_layout'] ?? '',
+          '#size' => 1,
+          '#weight' => '20',
+        ];
 
         return $form;
     }
@@ -66,6 +77,12 @@ class SocialMediaBlock extends BlockBase
               'socialmedia_provider'
             ]
         );
+        $this->configuration['block_layout'] = $form_state->getValue(
+            [
+              'socialmedia_settings',
+              'block_layout'
+            ]
+        );
     }
 
     /**
@@ -75,6 +92,7 @@ class SocialMediaBlock extends BlockBase
     {
         $socialmedia = [];
         $socialmedia['provider']     = $this->configuration['socialmedia_provider'];
+        $socialmedia['block_layout'] = $this->configuration['block_layout'];
 
         $build = [
             '#theme'        => 'blaetter_socialmedia_block',

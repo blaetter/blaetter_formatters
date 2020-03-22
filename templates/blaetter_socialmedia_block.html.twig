@@ -10,7 +10,7 @@
  */
 #}
 {% if socialmedia.provider %}
-<div class="block block--white teaser--socialmedia">
+<div class="{{ block_layout }} teaser--socialmedia">
   {% if socialmedia.provider.twitter %}
   <a title="Twitter" href="https://twitter.com/blaetter">
     <img title="" src="/modules/contrib/blaetter_formatters/images/smb_twitter.svg" alt="" />
@@ -22,7 +22,7 @@
   </a>
   {% endif %}
   {% if socialmedia.provider.instagram %}
-  <a title="Instagram" href="https://www.instagram.com/blaetterpolitik/">
+  <a title="Instagram" href="https://www.instagram.com/blaetterverlag/">
     <img title="" src="/modules/contrib/blaetter_formatters/images/smb_instagram.svg" alt="" />
   </a>
   {% endif %}
