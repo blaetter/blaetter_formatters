@@ -51,7 +51,7 @@ class SocialMediaBlock extends BlockBase
             ],
             '#required'     => true,
         ];
-        $form['socialmedia_settings']['box_layout'] = [
+        $form['socialmedia_settings']['block_layout'] = [
           '#type' => 'select',
           '#title' => $this->t('Box Layout'),
           '#description' => $this->t('Select desired box layout option.'),
