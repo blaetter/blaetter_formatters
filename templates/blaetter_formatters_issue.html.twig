@@ -16,8 +16,15 @@
  * @ingroup themeable
  */
 #}
+{% set link %}  <a href="{{ path('entity.node.canonical', {'node': book_id}) }}">»Blätter« {{ edition }}/{{ year }}</a>{% endset %}
+
+{% if display_pages and page_from %}
+  {% set pages %}, S. {{ page_from }}{% if page_to %}-{{ page_to }}{% endif %} {% endset %}
+{% else %}
+  {% set pages = '' %}
+{% endif %}
+
 <div class="articleinfo {{ extra_styles}}">
-    <div>{{ issue_prefix }}
-        <a href="{{ path('entity.node.canonical', {'node': book_id}) }}">»Blätter« {{ edition }}/{{ year }}</a>{% if display_pages %}, S. {{ page_from }}-{{ page_to }}{% endif %}
+    <div>{{ issue_prefix }}{{ link }}{{ pages }}
     </div>
 </div>
