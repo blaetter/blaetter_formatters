@@ -2,9 +2,10 @@
 
 namespace Drupal\blaetter_formatters\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceFormatterBase;
-use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceFormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -53,30 +54,32 @@ class InlineFormatter extends EntityReferenceFormatterBase
     {
         $elements = [];
         $elements['separator'] = [
-            '#title' => $this->t('Separator'),
-            '#description' => $this->t('Choose the separator which separates the inline elements.'),
-            '#type' => 'textfield',
-            '#maxlength'        => 2,
-            '#size'             => 4,
-            '#default_value' => $this->getSetting('separator'),
+            '#title'          => $this->t('Separator'),
+            '#description'    => $this->t('Choose the separator which separates the inline elements.'),
+            '#type'           => 'textfield',
+            '#maxlength'      => 2,
+            '#size'           => 4,
+            '#default_value'  => $this->getSetting('separator'),
         ];
         $elements['prefix'] = [
-            '#title' => $this->t('Prefix'),
-            '#description' => $this->t('Choose an optional prefix that is displayed right before the inline elements.'),
-            '#type' => 'textfield',
-            '#maxlength'        => 64,
-            '#size'             => 64,
-            '#default_value' => $this->getSetting('prefix'),
+            '#title'          => $this->t('Prefix'),
+            '#description'    => $this->t(
+                'Choose an optional prefix that is displayed right before the inline elements.'
+            ),
+            '#type'           => 'textfield',
+            '#maxlength'      => 64,
+            '#size'           => 64,
+            '#default_value'  => $this->getSetting('prefix'),
         ];
         $elements['use_links'] = [
-            '#title' => $this->t('Use links'),
-            '#description' => $this->t('Decide, if the referenced entities should be linked or not.'),
-            '#type' => 'select',
-            '#options' => [
+            '#title'          => $this->t('Use links'),
+            '#description'    => $this->t('Decide, if the referenced entities should be linked or not.'),
+            '#type'           => 'select',
+            '#options'        => [
                 '1' => $this->t('Use links'),
                 '0' => $this->t('Do not use links'),
             ],
-            '#default_value' => $this->getSetting('use_links'),
+            '#default_value'  => $this->getSetting('use_links'),
         ];
 
         return $elements;
