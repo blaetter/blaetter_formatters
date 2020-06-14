@@ -54,7 +54,7 @@ class InlineFormatter extends EntityReferenceFormatterBase
         $elements = [];
         $elements['separator'] = [
             '#title' => $this->t('Separator'),
-            '#title' => $this->t('Choose the separator which separates the inline elements.'),
+            '#description' => $this->t('Choose the separator which separates the inline elements.'),
             '#type' => 'textfield',
             '#maxlength'        => 2,
             '#size'             => 4,
@@ -62,7 +62,7 @@ class InlineFormatter extends EntityReferenceFormatterBase
         ];
         $elements['prefix'] = [
             '#title' => $this->t('Prefix'),
-            '#title' => $this->t('Choose an optional prefix that is displayed right before the inline elements.'),
+            '#description' => $this->t('Choose an optional prefix that is displayed right before the inline elements.'),
             '#type' => 'textfield',
             '#maxlength'        => 64,
             '#size'             => 64,
@@ -70,7 +70,7 @@ class InlineFormatter extends EntityReferenceFormatterBase
         ];
         $elements['use_links'] = [
             '#title' => $this->t('Use links'),
-            '#title' => $this->t('Decide, if the referenced entities should be linked or not.'),
+            '#description' => $this->t('Decide, if the referenced entities should be linked or not.'),
             '#type' => 'select',
             '#options' => [
                 '1' => $this->t('Use links'),
