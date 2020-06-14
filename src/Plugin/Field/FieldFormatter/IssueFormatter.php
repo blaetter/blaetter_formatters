@@ -2,7 +2,7 @@
 
 namespace Drupal\blaetter_formatters\Plugin\Field\FieldFormatter;
 
-use \Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceFormatterBase;
