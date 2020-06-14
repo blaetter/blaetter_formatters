@@ -28,7 +28,7 @@ class InlineFormatter extends EntityReferenceFormatterBase
         $summary = [];
         $settings = $this->getSettings();
 
-        $summary[] = t('Displays the referenced entites as string, separated by a configurable separator.');
+        $summary[] = $this->t('Displays the referenced entites as string, separated by a configurable separator.');
 
         return $summary;
     }
