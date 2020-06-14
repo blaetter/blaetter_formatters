@@ -16,7 +16,7 @@ use Drupal\field\Entity\FieldStorageConfig;
  *
  * @see hook_help()
  * )
- * @return string|void
+ * @return string
  */
 function blaetter_formatters_help(string $route_name, RouteMatchInterface $route_match)
 {

@@ -2,9 +2,10 @@
 
 namespace Drupal\blaetter_formatters\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceFormatterBase;
-use Drupal\Core\Field\FormatterBase;
+use \Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceFormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -28,7 +29,7 @@ class IssueFormatter extends FormatterBase
         $summary = [];
         $settings = $this->getSettings();
 
-        $summary[] = t('Displays the issue of the article.');
+        $summary[] = $this->t('Displays the issue of the article.');
 
         return $summary;
     }
@@ -39,9 +40,9 @@ class IssueFormatter extends FormatterBase
     {
         return [
             // Declare a settings and default values
-            'prefix' => '',
+            'prefix'        => '',
             'display_pages' => false,
-            'extra_styles' => '',
+            'extra_styles'  => '',
         ] + parent::defaultSettings();
     }
 
@@ -52,32 +53,34 @@ class IssueFormatter extends FormatterBase
     {
         $elements = [];
         $elements['prefix'] = [
-            '#title' => $this->t('Prefix'),
-            '#title' => $this->t('Choose an optional prefix that is displayed right before the inline elements.'),
-            '#type' => 'textfield',
-            '#maxlength'        => 64,
-            '#size'             => 64,
-            '#default_value' => $this->getSetting('prefix'),
+            '#title'          => $this->t('Prefix'),
+            '#description'    => $this->t(
+                'Choose an optional prefix that is displayed right before the inline elements.'
+            ),
+            '#type'           => 'textfield',
+            '#maxlength'      => 64,
+            '#size'           => 64,
+            '#default_value'  => $this->getSetting('prefix'),
         ];
         $elements['display_pages'] = [
-            '#title' => $this->t('display pages'),
-            '#title' => $this->t('Decide, if the pages should also be displayed behind the issue.'),
-            '#type' => 'select',
-            '#options' => [
+            '#title'          => $this->t('display pages'),
+            '#description'    => $this->t('Decide, if the pages should also be displayed behind the issue.'),
+            '#type'           => 'select',
+            '#options'        => [
                 '1' => $this->t('display pages'),
                 '0' => $this->t('do not display pages'),
             ],
-            '#default_value' => $this->getSetting('display_pages'),
+            '#default_value'  => $this->getSetting('display_pages'),
         ];
         $elements['extra_styles'] = [
-          '#title' => $this->t('extra styles'),
-          '#title' => $this->t('Choose extra styling options for this field.'),
-          '#type' => 'select',
-          '#options' => [
+          '#title'            => $this->t('extra styles'),
+          '#description'      => $this->t('Choose extra styling options for this field.'),
+          '#type'             => 'select',
+          '#options'          => [
               '' => $this->t('none'),
               'info--big' => $this->t('Big font size'),
           ],
-          '#default_value' => $this->getSetting('extra_styles'),
+          '#default_value'    => $this->getSetting('extra_styles'),
         ];
 
         return $elements;
@@ -101,17 +104,23 @@ class IssueFormatter extends FormatterBase
     public function viewElements(FieldItemListInterface $items, $langcode)
     {
         $node = $items->getEntity();
-        if ($node && !empty($node->book) && $node->id !== $node->book['bid']) {
+        if ($node instanceof FieldableEntityInterface
+            && !empty($node->book)
+            && $node->id() !== $node->book['bid']
+          ) {
+            /**
+             * @var FieldableEntityInterface $book
+             */
             $book = \Drupal::entityTypeManager()->getStorage('node')->load($node->book['bid']);
-            if ($book
+            if ($book instanceof FieldableEntityInterface
               && $book->hasField('field_ausgabe')
               && $book->hasField('field_jahr')
-              && null !== $book->get('field_ausgabe')->entity
-              && null !== $book->get('field_jahr')->entity
+              && $book->get('field_ausgabe')->entity instanceof FieldableEntityInterface
+              && $book->get('field_jahr')->entity instanceof FieldableEntityInterface
             ) {
                 // get the edition
-                $edition = $this->editionToMonth($book->get('field_ausgabe')->entity->getName());
-                $year = $book->get('field_jahr')->entity->getName();
+                $edition = $this->editionToMonth($book->get('field_ausgabe')->entity->get('name')->value);
+                $year = $book->get('field_jahr')->entity->get('name')->value;
 
                 $page_from = $page_to = null;
 
