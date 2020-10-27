@@ -4,9 +4,10 @@
  * Contains blaetter_formatters.module.
  */
 
-use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\field\Entity\FieldStorageConfig;
+use \Drupal\Core\Entity\EntityInterface;
+use \Drupal\Core\Entity\ContentEntityInterface;
+use \Drupal\Core\Routing\RouteMatchInterface;
+use \Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Implements hook_help()
@@ -134,6 +135,22 @@ function blaaetter_formatters_allowed_media_providers(FieldStorageConfig $defini
   return $options;
 }
 
+/**
+* Implements hook_mail().
+*/
+function blaetter_formatters_mail($key, &$message, $params) {
+  $options = array(
+    'langcode' => $message['langcode'],
+  );
+
+  switch ($key) {
+    case 'user_update':
+      $message['from'] = \Drupal::config('system.site')->get('mail');
+      $message['subject'] = t('User updated profile', $options);
+      $message['body'][] = $params['message'];
+      break;
+  }
+ }
 
 /**
  * implements hook_mail_alter()
@@ -199,5 +216,73 @@ function blaetter_formatters_mail_alter(&$message) {
         $new_body .= 'erreichen: 030/30883644.' . PHP_EOL;
       }
       $message['body'][] = $new_body;
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update
+ *
+ * Checks for updates on the user account and sends mail to site owner in case the user changed its address
+ *
+ * @param EntityInterface $entity
+ * @return void
+ */
+function blaetter_formatters_user_update(EntityInterface $entity)
+{
+  // we do only want to hook into the update of a user account.
+  if ('user' == $entity->bundle()) {
+    $user_account_changed = false;
+    // we need to check certain fields for changes:
+    $fields = [
+      'field_salutation' => t('salutation'),
+      'field_first_name' => t('first name'),
+      'field_last_name' => t('last name'),
+      'field_phone' => t('phone'),
+      'field_street' => t('street'),
+      'field_street_addon' => t('street addon'),
+      'field_zip' => t('postal code'),
+      'field_city' => t('city'),
+      'field_country' => t('country')
+    ];
+
+    $mail_body = t(
+      'Changed contact information for account @id (@url)',
+      [
+        '@id' => $entity->id(),
+        '@url' => $entity->toUrl('canonical', ['absolute' => true])->toString(),
+      ]
+    ) . PHP_EOL . PHP_EOL;
+
+    foreach ($fields as $key => $name) {
+      if ($entity->get($key)->value !== $entity->original->get($key)->value) {
+        $user_account_changed = true;
+        $mail_body .= t(
+          '@name changed from "@orig_value" to "@new_value"',
+          [
+            '@name' => $name,
+            '@orig_value' => $entity->original->get($key)->value,
+            '@new_value' => $entity->get($key)->value,
+          ]
+        ) . PHP_EOL;
+      }
+    }
+
+    if (true === $user_account_changed) {
+      $mailManager = \Drupal::service('plugin.manager.mail');
+      $to = \Drupal::config('nodeshop.settings')->get('payment.mail_to');
+      $params['message'] = $mail_body;
+      $langcode = \Drupal::currentUser()->getPreferredLangcode();
+      $send = true;
+
+      $result = $mailManager->mail('blaetter_formatters', 'user_update', $to, $langcode, $params, NULL, $send);
+      if (true !== $result['result']) {
+        \Drupal::logger('blaetter_formatters')->warning(
+          'Could not send user update notification mail for user @id',
+          [
+            '@id' => $entity->id()
+          ]
+        );
+      }
+    }
   }
 }
