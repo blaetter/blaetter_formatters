@@ -286,3 +286,21 @@ function blaetter_formatters_user_update(EntityInterface $entity)
     }
   }
 }
+
+/**
+ * Implementation of hook_form_alter
+ *
+ * @param array $form The drupal form array as a reference
+ * @param \Drupal\Core\Form\FormState $form_state
+ * @param string $form_id The Drupal form id
+ * @return void
+ */
+function blaetter_formatters_form_alter(&$form, \Drupal\Core\Form\FormState $form_state, $form_id) {
+  // Search form alter
+  if ('search_form' == $form_id) {
+    $moduleHandler = \Drupal::service('module_handler');
+    if ($moduleHandler->moduleExists('honeypot')) {
+      honeypot_add_form_protection($form, $form_state, array('honeypot', 'time_restriction'));
+    }
+  }
+}
