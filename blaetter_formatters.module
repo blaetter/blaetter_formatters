@@ -235,12 +235,14 @@ function blaetter_formatters_mail_alter(&$message) {
 
           //create a message for the end user containing date and time of the cancellation and give further instructions
           \Drupal::Messenger()->addMessage(
+            t(
               'We have received a cancellation of your subscription at %date. We did send you a mail containg all ' .
               'entered information as well as the confirmation of the date and time of your cancellation. Please make' .
               ' sure to save the message.',
               [
                 '%date' => $cancel_date,
               ]
+            )
           );
       } else {
           // check if we have a category and set up the subject if so
