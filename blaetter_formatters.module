@@ -210,6 +210,7 @@ function blaetter_formatters_mail_alter(&$message) {
           // create some variables to use the values easier.
           $name = $contact_message->get('field_vorname')->value . ' ' . $contact_message->get('field_nachname')->value;
           $datenschutzhinweise = $contact_message->get('field_datenschutzhinweise')->value ? 'ja' : 'nein';
+          $cancel_date = \Drupal::service('date.formatter')->format(\Drupal::time()->getCurrentTime('d'));
           if ('contact_page_mail' == $message['id']) {
             $new_body .= 'Hallo,' . PHP_EOL . PHP_EOL;
             $new_body .= $name . ' hat eine Kündigung hinterlegt:' . PHP_EOL . PHP_EOL;
@@ -230,8 +231,17 @@ function blaetter_formatters_mail_alter(&$message) {
           $new_body .= 'Nachricht:' . PHP_EOL;
           $new_body .= $contact_message->get('field_nachricht')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL . PHP_EOL;
-          $new_body .= 'Zeitpunkt des Eingangs der Kündigung: ' .
-              \Drupal::service('date.formatter')->format(\Drupal::time()->getCurrentTime('d'));
+          $new_body .= 'Zeitpunkt des Eingangs der Kündigung: ' . $cancel_date;
+
+          //create a message for the end user containing date and time of the cancellation and give further instructions
+          \Drupal::Messenger()->addMessage(
+              'We have received a cancellation of your subscription at %date. We did send you a mail containg all ' .
+              'entered information as well as the confirmation of the date and time of your cancellation. Please make' .
+              ' sure to save the message.',
+              [
+                '%date' => $cancel_date,
+              ]
+          );
       } else {
           // check if we have a category and set up the subject if so
           if ($contact_message->hasField('field_category') && !empty($contact_message->get('field_category')->value)) {
