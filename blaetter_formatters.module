@@ -362,6 +362,9 @@ function blaetter_formatters_form_alter(&$form, \Drupal\Core\Form\FormState $for
     }
   }
   if ('contact_message_kuendigung_abonnement_form' == $form_id) {
-      $form['actions']['submit']['#value'] = t('Submit termination');
+    $form['actions']['submit']['#value'] = t('Submit termination');
+    // always send copies to the user.
+    $form['copy']['#value'] = true;
+
   }
 }
