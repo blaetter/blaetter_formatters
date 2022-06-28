@@ -231,7 +231,9 @@ function blaetter_formatters_mail_alter(&$message) {
           $new_body .= 'Nachricht:' . PHP_EOL;
           $new_body .= $contact_message->get('field_nachricht')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL . PHP_EOL;
-          $new_body .= 'Zeitpunkt des Eingangs der Kündigung: ' . $cancel_date;
+          $new_body .= 'Zeitpunkt des Eingangs der Kündigung: ' . $cancel_date . PHP_EOL . PHP_EOL . PHP_EOL;
+          $new_body .= 'Bitte speichern Sie sich diese Nachricht als Nachweis über den Kündigungseingang ab.' . PHP_EOL . PHP_EOL;
+          $new_body .= 'Vielen Dank, Ihre »Blätter«';
 
           //create a message for the end user containing date and time of the cancellation and give further instructions
           \Drupal::Messenger()->addMessage(
