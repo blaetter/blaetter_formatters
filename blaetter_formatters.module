@@ -170,14 +170,8 @@ function blaetter_formatters_mail_alter(&$message) {
       // get the contact message object
       $contact_message = $message['params']['contact_message'];
 
-      // check if we have a category and set up the subject if so
-      if ($contact_message->hasField('field_category') && !empty($contact_message->get('field_category')->value)) {
-        $message['subject'] = str_replace(
-          'Website-Feedback',
-          $contact_message->get('field_category')->value,
-          $message['subject']
-        );
-      }
+      // get the form id to decide which type of mail we need to send
+      $contact_type = $contact_message->getContactForm()->get('id');
 
       // empty the body
       $message['body'] = [];
@@ -186,36 +180,100 @@ function blaetter_formatters_mail_alter(&$message) {
       $fields = $contact_message->getFields();
       $new_body = '';
 
-      if ('contact_page_mail' == $message['id']) {
-        $new_body .= $contact_message->get('name')->value . ' hat folgende Nachricht über das Kontaktformular auf ' .
-        'https://www.blaetter.de/contact geschickt:' . PHP_EOL . PHP_EOL;
-      } elseif ('contact_page_copy' == $message['id']) {
-        $new_body .= 'Hallo ' . $contact_message->get('name')->value . ',' . PHP_EOL . PHP_EOL;
-        $new_body .= 'vielen Dank für Ihre Anfrage, wir haben folgende Nachricht von Ihnen erhalten: ' . PHP_EOL . PHP_EOL;
-      }
-
-      $new_body .= $contact_message->get('message')->value . PHP_EOL . PHP_EOL;
-
-      foreach ($fields as $field_name => $field) {
-          // as we use the category for the subject, there is no need to display it again here.
-          if ('field_category' == $field_name) {
-            continue;
+      if ('sepa_lastschriftmandat' == $contact_type) {
+          // create some variables to use the values easier.
+          $name = $contact_message->get('field_vorname')->value . ' ' . $contact_message->get('field_nachname')->value;
+          $ermaechtigung = $contact_message->get('field_ermaechtigung')->value ? 'ja' : 'nein';
+          $datenschutzhinweise = $contact_message->get('field_datenschutzhinweise')->value ? 'ja' : 'nein';
+          if ('contact_page_mail' == $message['id']) {
+            $new_body .= 'Hallo,' . PHP_EOL . PHP_EOL;
+            $new_body .= $name . ' hat ein SEPA-Lastschriftmandat hinterlegt:' . PHP_EOL . PHP_EOL;
+          } elseif ('contact_page_copy' == $message['id']) {
+            $new_body .= 'Hallo ' . $name . ',' . PHP_EOL . PHP_EOL;
+            $new_body .= 'vielen Dank für die Hinterlegung Ihres SEPA-Mandats. ';
+            $new_body .= 'Wir haben folgende Nachricht von Ihnen erhalten: ' . PHP_EOL . PHP_EOL;
           }
-          if (get_class($field->getFieldDefinition()) == 'Drupal\field\Entity\FieldConfig') {
-              $new_body .= $field->getFieldDefinition()->label() . ':' . PHP_EOL .
-                  $contact_message->get($field_name)->value . PHP_EOL . PHP_EOL;
+
+          $new_body .= 'Name: ' . $name . PHP_EOL;
+          $new_body .= 'E-Mail: ' . $contact_message->get('mail')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Anschrift:' . PHP_EOL;
+          $new_body .= $contact_message->get('field_strasse_und_hausnummer')->value . PHP_EOL;
+          $new_body .= $contact_message->get('field_postleitzahl')->value . ' ';
+          $new_body .= $contact_message->get('field_stadt')->value . PHP_EOL;
+          $new_body .= $contact_message->get('field_land')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Bankverbindung: ' . PHP_EOL;
+          $new_body .= $contact_message->get('field_iban')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Ermächtigung des Einzugs: ' . $ermaechtigung . PHP_EOL;
+          $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL;
+      } else if ('kuendigung_abonnement' === $contact_type) {
+          // create some variables to use the values easier.
+          $name = $contact_message->get('field_vorname')->value . ' ' . $contact_message->get('field_nachname')->value;
+          $datenschutzhinweise = $contact_message->get('field_datenschutzhinweise')->value ? 'ja' : 'nein';
+          if ('contact_page_mail' == $message['id']) {
+            $new_body .= 'Hallo,' . PHP_EOL . PHP_EOL;
+            $new_body .= $name . ' hat eine Kündigung hinterlegt:' . PHP_EOL . PHP_EOL;
+          } elseif ('contact_page_copy' == $message['id']) {
+            $new_body .= 'Hallo ' . $name . ',' . PHP_EOL . PHP_EOL;
+            $new_body .= 'wir haben Ihre Kündigung mit den folgenden Daten erhalten: ' . PHP_EOL . PHP_EOL;
+          }
+
+          $new_body .= 'Name: ' . $name . PHP_EOL;
+          $new_body .= 'E-Mail: ' . $contact_message->get('mail')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Anschrift:' . PHP_EOL;
+          $new_body .= $contact_message->get('field_strasse_und_hausnummer')->value . PHP_EOL;
+          $new_body .= $contact_message->get('field_postleitzahl')->value . ' ';
+          $new_body .= $contact_message->get('field_stadt')->value . PHP_EOL;
+          $new_body .= $contact_message->get('field_land')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Gewünschter Kündigungszeitraum: ' . $contact_message->get('field_kündigungszeitraum')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Nachricht:' . PHP_EOL;
+          $new_body .= $contact_message->get('field_nachricht')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL . PHP_EOL;
+          $new_body .= 'Zeitpunkt des Eingangs der Kündigung: ' .
+              \Drupal::service('date.formatter')->format(\Drupal::time()->getCurrentTime('d'));
+      } else {
+          // check if we have a category and set up the subject if so
+          if ($contact_message->hasField('field_category') && !empty($contact_message->get('field_category')->value)) {
+            $message['subject'] = str_replace(
+              'Website-Feedback',
+              $contact_message->get('field_category')->value,
+              $message['subject']
+            );
+          }
+
+          if ('contact_page_mail' == $message['id']) {
+            $new_body .= $contact_message->get('name')->value . ' hat folgende Nachricht über das Kontaktformular auf ' .
+            'https://www.blaetter.de/contact geschickt:' . PHP_EOL . PHP_EOL;
+          } elseif ('contact_page_copy' == $message['id']) {
+            $new_body .= 'Hallo ' . $contact_message->get('name')->value . ',' . PHP_EOL . PHP_EOL;
+            $new_body .= 'vielen Dank für Ihre Anfrage, wir haben folgende Nachricht von Ihnen erhalten: ' . PHP_EOL . PHP_EOL;
+          }
+
+          $new_body .= $contact_message->get('message')->value . PHP_EOL . PHP_EOL;
+
+          foreach ($fields as $field_name => $field) {
+              // as we use the category for the subject, there is no need to display it again here.
+              if ('field_category' == $field_name) {
+                continue;
+              }
+              if (get_class($field->getFieldDefinition()) == 'Drupal\field\Entity\FieldConfig') {
+                  $new_body .= $field->getFieldDefinition()->label() . ':' . PHP_EOL .
+                      $contact_message->get($field_name)->value . PHP_EOL . PHP_EOL;
+              }
+          }
+
+          // add a footer for mails sended to the user in copy
+          if ('contact_page_copy' == $message['id']) {
+            $new_body .= '--' . PHP_EOL . PHP_EOL;
+            $new_body .= 'Haben Sie vielen Dank für Ihre Mitteilung an den Blätter-Bestellservice.' . PHP_EOL;
+            $new_body .= 'Wir haben die Nachricht erhalten und bemühen uns, diese schnellstmöglich' . PHP_EOL;
+            $new_body .= 'zu beantworten. In dringenden Fällen können Sie uns auch telefonisch' . PHP_EOL;
+            $new_body .= 'erreichen: 030/30883644.' . PHP_EOL;
           }
       }
-
-      // add a footer for mails sended to the user in copy
-      if ('contact_page_copy' == $message['id']) {
-        $new_body .= '--' . PHP_EOL . PHP_EOL;
-        $new_body .= 'Haben Sie vielen Dank für Ihre Mitteilung an den Blätter-Bestellservice.' . PHP_EOL;
-        $new_body .= 'Wir haben die Nachricht erhalten und bemühen uns, diese schnellstmöglich' . PHP_EOL;
-        $new_body .= 'zu beantworten. In dringenden Fällen können Sie uns auch telefonisch' . PHP_EOL;
-        $new_body .= 'erreichen: 030/30883644.' . PHP_EOL;
-      }
-      $message['body'][] = $new_body;
+      // reset the body of the message
+      $message['body'][] = trim($new_body);
   }
 }
 
@@ -300,7 +358,10 @@ function blaetter_formatters_form_alter(&$form, \Drupal\Core\Form\FormState $for
   if ('search_form' == $form_id) {
     $moduleHandler = \Drupal::service('module_handler');
     if ($moduleHandler->moduleExists('honeypot')) {
-      honeypot_add_form_protection($form, $form_state, array('honeypot', 'time_restriction'));
+      \Drupal::service('honeypot')->addFormProtection($form, $form_state, array('honeypot', 'time_restriction'));
     }
+  }
+  if ('contact_message_kuendigung_abonnement_form' == $form_id) {
+      $form['actions']['submit']['#value'] = t('Submit termination');
   }
 }
