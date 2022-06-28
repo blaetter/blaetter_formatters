@@ -226,7 +226,7 @@ function blaetter_formatters_mail_alter(&$message) {
           $new_body .= $contact_message->get('field_stadt')->value . PHP_EOL;
           $new_body .= $contact_message->get('field_land')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
-          $new_body .= 'Gewünschter Kündigungszeitraum: ' . $contact_message->get('field_kündigungszeitraum')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Gewünschter Kündigungszeitraum: ' . $contact_message->get('field_kuendigungszeitraum')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Nachricht:' . PHP_EOL;
           $new_body .= $contact_message->get('field_nachricht')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL . PHP_EOL;
