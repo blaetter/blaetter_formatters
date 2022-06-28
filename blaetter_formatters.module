@@ -206,7 +206,7 @@ function blaetter_formatters_mail_alter(&$message) {
           $new_body .= 'Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Ermächtigung des Einzugs: ' . $ermaechtigung . PHP_EOL;
           $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL;
-      } else if ('kuendigung_abonnement' === $contact_type) {
+      } else if ('kuendigung_abonnement' == $contact_type) {
           // create some variables to use the values easier.
           $name = $contact_message->get('field_vorname')->value . ' ' . $contact_message->get('field_nachname')->value;
           $datenschutzhinweise = $contact_message->get('field_datenschutzhinweise')->value ? 'ja' : 'nein';
