@@ -1,5 +1,5 @@
 name: Blätter Formatters
 type: module
 description: Provides custom formatters and functionality for Drupal
-core_version_requirement: ^8.8 || ^9
+core_version_requirement: ^9 || ^10
 package: Blätter
