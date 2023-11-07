@@ -38,6 +38,7 @@ function blaetter_formatters_help(string $route_name, RouteMatchInterface $route
             $output .= '</ul>';
             return $output;
     }
+    return '';
 }
 
 /**
@@ -210,7 +211,7 @@ function blaetter_formatters_mail_alter(&$message) {
           // create some variables to use the values easier.
           $name = $contact_message->get('field_vorname')->value . ' ' . $contact_message->get('field_nachname')->value;
           $datenschutzhinweise = $contact_message->get('field_datenschutzhinweise')->value ? 'ja' : 'nein';
-          $cancel_date = \Drupal::service('date.formatter')->format(\Drupal::time()->getCurrentTime('d'));
+          $cancel_date = \Drupal::service('date.formatter')->format(\Drupal::time()->getCurrentTime());
           if ('contact_page_mail' == $message['id']) {
             $new_body .= 'Hallo,' . PHP_EOL . PHP_EOL;
             $new_body .= $name . ' hat eine Kündigung hinterlegt:' . PHP_EOL . PHP_EOL;
