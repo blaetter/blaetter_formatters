@@ -244,17 +244,19 @@ function blaetter_formatters_mail_alter(&$message) {
           // we need to check all fields for spam so use $new_body for that
           $is_spam = blaetter_formatters_check_for_spam($new_body);
 
-          //create a message for the end user containing date and time of the cancellation and give further instructions
-          \Drupal::Messenger()->addMessage(
-            t(
-              'We have received a cancellation of your subscription at %date. We did send you a mail containg all ' .
-              'entered information as well as the confirmation of the date and time of your cancellation. Please make' .
-              ' sure to save the message.',
-              [
-                '%date' => $cancel_date,
-              ]
-            )
-          );
+          if (false == $is_spam) {
+              //create a message for the end user containing date and time of the cancellation and give further instructions
+              \Drupal::Messenger()->addMessage(
+                t(
+                  'We have received a cancellation of your subscription at %date. We did send you a mail containg all ' .
+                  'entered information as well as the confirmation of the date and time of your cancellation. Please make' .
+                  ' sure to save the message.',
+                  [
+                    '%date' => $cancel_date,
+                  ]
+                )
+              );
+          }
       } else {
           // check if we have a category and set up the subject if so
           if ($contact_message->hasField('field_category') && !empty($contact_message->get('field_category')->value)) {
