@@ -168,6 +168,9 @@ function blaetter_formatters_mail_alter(&$message) {
     )
   ) {
 
+      // set is_spam t0 false
+      $is_spam = false;
+
       // get the contact message object
       $contact_message = $message['params']['contact_message'];
 
@@ -207,6 +210,8 @@ function blaetter_formatters_mail_alter(&$message) {
           $new_body .= 'Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Ermächtigung des Einzugs: ' . $ermaechtigung . PHP_EOL;
           $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL;
+          // we need to check all fields for spam so use $new_body for that
+          $is_spam = blaetter_formatters_check_for_spam($new_body);
       } else if ('kuendigung_abonnement' == $contact_type) {
           // create some variables to use the values easier.
           $name = $contact_message->get('field_vorname')->value . ' ' . $contact_message->get('field_nachname')->value;
@@ -236,6 +241,9 @@ function blaetter_formatters_mail_alter(&$message) {
           $new_body .= 'Bitte speichern Sie sich diese Nachricht als Nachweis über den Kündigungseingang ab.' . PHP_EOL . PHP_EOL;
           $new_body .= 'Vielen Dank, Ihre »Blätter«';
 
+          // we need to check all fields for spam so use $new_body for that
+          $is_spam = blaetter_formatters_check_for_spam($new_body);
+
           //create a message for the end user containing date and time of the cancellation and give further instructions
           \Drupal::Messenger()->addMessage(
             t(
@@ -258,9 +266,11 @@ function blaetter_formatters_mail_alter(&$message) {
           }
 
           if ('contact_page_mail' == $message['id']) {
+            $is_spam = blaetter_formatters_check_for_spam($contact_message->get('message')->value);
             $new_body .= $contact_message->get('name')->value . ' hat folgende Nachricht über das Kontaktformular auf ' .
             'https://www.blaetter.de/contact geschickt:' . PHP_EOL . PHP_EOL;
           } elseif ('contact_page_copy' == $message['id']) {
+            $is_spam = blaetter_formatters_check_for_spam($contact_message->get('message')->value);
             $new_body .= 'Hallo ' . $contact_message->get('name')->value . ',' . PHP_EOL . PHP_EOL;
             $new_body .= 'vielen Dank für Ihre Anfrage, wir haben folgende Nachricht von Ihnen erhalten: ' . PHP_EOL . PHP_EOL;
           }
@@ -287,9 +297,37 @@ function blaetter_formatters_mail_alter(&$message) {
             $new_body .= 'erreichen: 030/30883644.' . PHP_EOL;
           }
       }
+
+      // if we detected spam we set the send paramter to false to prevent sending the spam mail
+      if (true === $is_spam) {
+          $message['send'] = FALSE;
+      }
+
       // reset the body of the message
       $message['body'][] = trim($new_body);
   }
+}
+
+/**
+ * Checks if mail_body contains links so we can assume its spam
+ *
+ * @param string $body
+ * @return bool true|false
+ */
+function blaetter_formatters_check_for_spam($body)
+{
+    $is_spam = false;
+    $url_validation_regex = "/https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)/";
+    if (preg_match($url_validation_regex, $body)) {
+        $is_spam = true;
+        // we found links in $body so it's likely spam
+        // put this into the drupal watchdog
+        \Drupal::logger('mail')->log('warning', t('found mail_body with links, cancel sending'));
+        // display a notice to the end user (but likely do not point them towords the links)
+        \Drupal::messenger()->addMessage(t('The mail could not be delivered. Please try again or contact us via mail.'), 'warning');
+    }
+
+    return $is_spam;
 }
 
 /**
