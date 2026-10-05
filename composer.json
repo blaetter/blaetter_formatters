@@ -1,8 +1,8 @@
 {
     "name": "drupal/blaetter_formatters",
-    "description": "This module adds formatters to the Drupal installation",
+    "description": "Formatters, blocks and further functionality for the website of the Blätter",
     "type": "drupal-module",
-    "license": "GPL-2.0+",
+    "license": "GPL-2.0-or-later",
     "authors": [
         {
             "name": "ambo",
@@ -10,5 +10,7 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {
+        "php": ">=8.1"
+    }
 }

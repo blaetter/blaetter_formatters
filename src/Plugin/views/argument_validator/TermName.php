@@ -34,7 +34,7 @@ class TermName extends Entity
         $plugin_id,
         $plugin_definition,
         EntityTypeManagerInterface $entity_type_manager,
-        EntityTypeBundleInfoInterface $entity_type_bundle_info = null
+        ?EntityTypeBundleInfoInterface $entity_type_bundle_info = null
     ) {
         parent::__construct(
             $configuration,

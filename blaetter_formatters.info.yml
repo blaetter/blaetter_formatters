@@ -1,5 +1,15 @@
 name: Blätter Formatters
 type: module
-description: Provides custom formatters and functionality for Drupal
+description: Provides formatters, blocks and further functionality for the website of the Blätter
 core_version_requirement: ^10 || ^11
 package: Blätter
+
+dependencies:
+  - drupal:block
+  - drupal:book
+  - drupal:media
+  - drupal:node
+  - drupal:options
+  - drupal:taxonomy
+  - drupal:user
+  - drupal:views

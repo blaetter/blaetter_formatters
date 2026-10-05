@@ -11,3 +11,75 @@ field.formatter.settings.blaetter_formatters_inline:
     use_links:
       type: boolean
       label: 'Use links'
+
+field.formatter.settings.blaetter_formatters_issue:
+  type: mapping
+  label: 'Blätter issue formatter settings'
+  mapping:
+    prefix:
+      type: label
+      label: 'Prefix'
+    display_pages:
+      # stored as '1' or '0' by the select list of the settings form
+      type: string
+      label: 'Display pages'
+    extra_styles:
+      type: string
+      label: 'Extra styles'
+
+block.settings.grid_block:
+  type: block_settings
+  label: 'Grid block'
+  mapping:
+    grid_option:
+      type: string
+      label: 'Grid'
+    left_title:
+      type: label
+      label: 'Title of the left side'
+    left_block_ids:
+      type: string
+      label: 'Blocks and views of the left side'
+    right_title:
+      type: label
+      label: 'Title of the right side'
+    right_block_ids:
+      type: string
+      label: 'Blocks and views of the right side'
+    left_views_ids:
+      type: string
+      label: 'No longer used, views are part of left_block_ids'
+    right_views_ids:
+      type: string
+      label: 'No longer used, views are part of right_block_ids'
+
+block.settings.socialmedia_block:
+  type: block_settings
+  label: 'Social media block'
+  mapping:
+    socialmedia_provider:
+      type: sequence
+      label: 'Social media providers'
+      sequence:
+        type: string
+        label: 'Provider'
+    block_layout:
+      type: string
+      label: 'Box layout'
+
+block.settings.embed_block:
+  type: block_settings
+  label: 'Embed block'
+  mapping:
+    embed_url:
+      type: string
+      label: 'URL of the embed'
+    provider:
+      type: string
+      label: 'Provider'
+    privacy:
+      type: string
+      label: 'Privacy'
+    additional_styles:
+      type: string
+      label: 'Additional styles'

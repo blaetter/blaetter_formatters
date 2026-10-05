@@ -1,0 +1,26 @@
+# Changelog Blätter Formatters
+
+All notable changes to this module, grouped by topic. New entries go into the "Unreleased" section at the top; on deployment it gets the date.
+
+Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty sections).
+
+## Unreleased
+
+### Security
+- Grid blocks only show views the current user may access
+- The copy of a SEPA mandate for the customer only shows the masked IBAN; the complete IBAN is only sent to the shop
+
+### Bugs
+- New embed and social media blocks showed PHP warnings in their settings form (missing default configuration)
+- The social media block stored unchecked providers as 0
+- The notification about changed addresses had no recipient without the NodeShop settings; the site mail address is used as fallback
+- A grid block referencing a deleted or renamed view broke the whole page; missing views, displays and blocks are now skipped and logged
+- Embedded videos and other external content could not be loaded when the cookie banner script was missing, and content loaded later (e.g. via AJAX) got no consent button
+- The provider options of media were cached for the first media type and then offered for all others
+
+### Maintenance
+- Config schema for the issue formatter and the grid, social media and embed blocks
+- Dependencies in `info.yml`, license and PHP version in `composer.json`, help page describes all features
+- Unit tests for the grid block, the block settings, the config schema and the module hooks
+- Compatibility with PHP 8.4 (explicitly nullable parameters) and Drupal 12 (original entity via `getOriginal()`)
+- Consent script uses Drupal behaviors and declares its dependencies
