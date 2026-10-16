@@ -21,7 +21,10 @@ class SocialMediaBlock extends BlockBase
      */
     public function defaultConfiguration()
     {
-        return [] + parent::defaultConfiguration();
+        return [
+            'socialmedia_provider' => [],
+            'block_layout'         => 'block',
+        ] + parent::defaultConfiguration();
     }
 
     /**
@@ -71,11 +74,9 @@ class SocialMediaBlock extends BlockBase
      */
     public function blockSubmit($form, FormStateInterface $form_state)
     {
-        $this->configuration['socialmedia_provider'] = $form_state->getValue(
-            [
-              'socialmedia_settings',
-              'socialmedia_provider'
-            ]
+        // only store the chosen providers, unchecked checkboxes have the value 0
+        $this->configuration['socialmedia_provider'] = array_filter(
+            (array) $form_state->getValue(['socialmedia_settings', 'socialmedia_provider'])
         );
         $this->configuration['block_layout'] = $form_state->getValue(
             [

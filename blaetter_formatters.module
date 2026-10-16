@@ -5,9 +5,9 @@
  */
 
 use \Drupal\Core\Entity\EntityInterface;
-use \Drupal\Core\Entity\ContentEntityInterface;
+use \Drupal\Core\Entity\FieldableEntityInterface;
+use \Drupal\Core\Field\FieldStorageDefinitionInterface;
 use \Drupal\Core\Routing\RouteMatchInterface;
-use \Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Implements hook_help()
@@ -22,20 +22,20 @@ use \Drupal\field\Entity\FieldStorageConfig;
 function blaetter_formatters_help(string $route_name, RouteMatchInterface $route_match)
 {
     switch ($route_name) {
-        // Main module help for the nodeshop module.
+        // Main module help for the blaetter_formatters module.
         case 'help.page.blaetter_formatters':
-            $output = '';
-            $output .= '<h3>' . t('About') . '</h3>';
-            $output .= '<p>' . t(
-                'This module adds formatters to Drupal fields. Currently there are the following formatters:'
-            ) . '</p>';
-            $output .= '<ul>';
-            $output .= '<li>' . t(
-              '<strong>Blätter inline formatter</strong>: This formatter takes entity references and displays their ' .
-              'values inline with a configurable seperator. You can also specify an optional prefix and decide, if ' .
-              'values should be linked to its entity pages or not.'
-            ) . '</li>';
-            $output .= '</ul>';
+            $items = [
+                t('<strong>Blätter inline formatter</strong>: Displays entity references inline with a configurable separator, an optional prefix and optional links.'),
+                t('<strong>Blätter issue formatter</strong>: Displays the issue of an article (e.g. »Blätter« 12/2018, p. 45-56) with a link to the issue.'),
+                t('<strong>Grid block</strong>: Displays blocks, content blocks and views in two columns.'),
+                t('<strong>Social media block</strong>: Displays links to the social media channels of the Blätter.'),
+                t('<strong>Embed block</strong> and <strong>generic iFrame media</strong>: Embed external content, which is only loaded after the consent of the user.'),
+                t('<strong>Views argument validators</strong>: Single characters for glossaries and term names.'),
+                t('<strong>Mails</strong>: Formats the mails of the contact forms (contact, SEPA mandate, cancellation), drops mails containing links as spam and notifies the shop about changed addresses of users.'),
+            ];
+            $output = '<h3>' . t('About') . '</h3>';
+            $output .= '<p>' . t('This module provides formatters, blocks and further functionality for the website of the Blätter:') . '</p>';
+            $output .= '<ul><li>' . implode('</li><li>', array_map('strval', $items)) . '</li></ul>';
             return $output;
     }
     return '';
@@ -108,9 +108,11 @@ function blaetter_formatters_theme()
 /**
  * Set dynamic allowed values for the provider field of the media type oembed.
  *
- * @param \Drupal\field\Entity\FieldStorageConfig $definition
+ * Note: the misspelled function name is referenced by the field storage config of field_provider.
+ *
+ * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $definition
  *   The field definition.
- * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
+ * @param \Drupal\Core\Entity\FieldableEntityInterface|null $entity
  *   The entity being created if applicable.
  * @param bool $cacheable
  *   Boolean indicating if the results are cacheable.
@@ -118,9 +120,15 @@ function blaetter_formatters_theme()
  * @return array
  *   An array of possible key and value options.
  *
- * @see options_allowed_values()
+ * @see callback_allowed_values_function()
  */
-function blaaetter_formatters_allowed_media_providers(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
+function blaaetter_formatters_allowed_media_providers(
+  FieldStorageDefinitionInterface $definition,
+  ?FieldableEntityInterface $entity = NULL,
+  &$cacheable = TRUE
+) {
+  // The options depend on the media type, so they must not be cached for the field.
+  $cacheable = FALSE;
   $options = [];
   if (null !== $entity && 'generic_iframe' == $entity->bundle()) {
     $options = [
@@ -206,7 +214,11 @@ function blaetter_formatters_mail_alter(&$message) {
           $new_body .= $contact_message->get('field_stadt')->value . PHP_EOL;
           $new_body .= $contact_message->get('field_land')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Bankverbindung: ' . PHP_EOL;
-          $new_body .= $contact_message->get('field_iban')->value . PHP_EOL . PHP_EOL;
+          // The shop needs the complete IBAN for the mandate, the copy for the customer only shows its end, so the
+          // complete bank details are not spread via unencrypted mail.
+          $iban = (string) $contact_message->get('field_iban')->value;
+          $new_body .= ('contact_page_copy' == $message['id'] ? blaetter_formatters_mask_iban($iban) : $iban)
+            . PHP_EOL . PHP_EOL;
           $new_body .= 'Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Ermächtigung des Einzugs: ' . $ermaechtigung . PHP_EOL;
           $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL;
@@ -311,6 +323,24 @@ function blaetter_formatters_mail_alter(&$message) {
 }
 
 /**
+ * Masks an IBAN, only the country code and the last four characters stay visible.
+ *
+ * Example: DE89 3704 0044 0532 0130 00 becomes DE** **** **** **** **30 00.
+ *
+ * @param string $iban
+ * @return string
+ */
+function blaetter_formatters_mask_iban($iban)
+{
+    $iban = strtoupper(preg_replace('/\s+/', '', (string) $iban));
+    if (strlen($iban) <= 6) {
+        return str_repeat('*', strlen($iban));
+    }
+    $masked = substr($iban, 0, 2) . str_repeat('*', strlen($iban) - 6) . substr($iban, -4);
+    return trim(chunk_split($masked, 4, ' '));
+}
+
+/**
  * Checks if mail_body contains links so we can assume its spam
  *
  * @param string $body
@@ -366,14 +396,20 @@ function blaetter_formatters_user_update(EntityInterface $entity)
       ]
     ) . PHP_EOL . PHP_EOL;
 
+    // EntityInterface::getOriginal() replaces the deprecated property "original" since Drupal 11.2.
+    $original = method_exists($entity, 'getOriginal') ? $entity->getOriginal() : $entity->original;
+    if (!$original instanceof FieldableEntityInterface) {
+      return;
+    }
+
     foreach ($fields as $key => $name) {
-      if ($entity->get($key)->value !== $entity->original->get($key)->value) {
+      if ($entity->get($key)->value !== $original->get($key)->value) {
         $user_account_changed = true;
         $mail_body .= t(
           '@name changed from "@orig_value" to "@new_value"',
           [
             '@name' => $name,
-            '@orig_value' => $entity->original->get($key)->value,
+            '@orig_value' => $original->get($key)->value,
             '@new_value' => $entity->get($key)->value,
           ]
         ) . PHP_EOL;
@@ -382,7 +418,9 @@ function blaetter_formatters_user_update(EntityInterface $entity)
 
     if (true === $user_account_changed) {
       $mailManager = \Drupal::service('plugin.manager.mail');
-      $to = \Drupal::config('nodeshop.settings')->get('payment.mail_to');
+      // the shop receives the changes, without NodeShop the mail address of the site is used
+      $to = \Drupal::config('nodeshop.settings')->get('payment.mail_to')
+        ?: \Drupal::config('system.site')->get('mail');
       $params['message'] = $mail_body;
       $langcode = \Drupal::currentUser()->getPreferredLangcode();
       $send = true;

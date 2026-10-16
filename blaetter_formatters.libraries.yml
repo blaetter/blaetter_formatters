@@ -2,5 +2,6 @@ embed_block:
   js:
     js/blaetter_embed.js: {}
   dependencies:
+    - core/drupal
     - core/jquery
-
+    - core/once

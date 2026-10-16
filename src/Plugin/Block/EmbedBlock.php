@@ -28,7 +28,12 @@ class EmbedBlock extends BlockBase
      */
     public function defaultConfiguration()
     {
-        return [] + parent::defaultConfiguration();
+        return [
+            'embed_url'         => '',
+            'provider'          => '',
+            'privacy'           => '',
+            'additional_styles' => '',
+        ] + parent::defaultConfiguration();
     }
 
     /**
@@ -119,9 +124,7 @@ class EmbedBlock extends BlockBase
         $embed['title']     = $this->configuration['label'];
         $embed['url']       = $this->configuration['embed_url'];
         $embed['privacy']   = $this->configuration['privacy'];
-        $embed['provider']  = $this->provider[
-          $this->configuration['provider']
-        ];
+        $embed['provider']  = $this->provider[$this->configuration['provider']] ?? '';
         $embed['provider_slug'] = $this->configuration['provider'];
         $embed['styles']    = $this->configuration['additional_styles'];
 

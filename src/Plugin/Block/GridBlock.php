@@ -3,7 +3,10 @@
 namespace Drupal\blaetter_formatters\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Logger\LoggerChannelTrait;
+use Drupal\views\Views;
 
 /**
  * Provides a 'GridBlock' block.
@@ -15,6 +18,7 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class GridBlock extends BlockBase
 {
+    use LoggerChannelTrait;
 
     /**
      * {@inheritdoc}
@@ -22,7 +26,11 @@ class GridBlock extends BlockBase
     public function defaultConfiguration()
     {
         return [
-                'grid_option' => '1:2',
+            'grid_option'     => '1:2',
+            'left_title'      => '',
+            'left_block_ids'  => '',
+            'right_title'     => '',
+            'right_block_ids' => '',
         ] + parent::defaultConfiguration();
     }
 
@@ -216,61 +224,113 @@ class GridBlock extends BlockBase
      * This method extracts the given ids and gets the render arrays of the
      * referenced blocks or views.
      *
+     * One entry per line: block|BLOCK_ID, content|CONTENT_BLOCK_ID or VIEW_ID:DISPLAY_ID. Entries that do not exist
+     * (anymore) are skipped and logged, so a deleted block or view does not break the whole page.
+     *
      * @param string $ids The given block ids or views id specified in the block configuration
      * @return array $build The Drupal render array with all elements that needs to be rendered
      */
     public function getRenderElements($ids)
     {
         $build = [];
-        // extract the ids, they are separated by line endings
-        $block_ids = explode("\n", $ids);
-        // loop through the block_ids and try to get the render array from the either blocks or views
-        // views need to be separated with a colon, so we can identify them
-        foreach ($block_ids as $block_id) {
-            if (false !== strpos($block_id, ':')) {
-                // explode block_id to views_name ($view[0]) and display_id ($view[1])
-                $views_options = explode(':', trim($block_id));
-                $view = \Drupal\views\Views::getView(trim($views_options[0]));
-                $view->setDisplay(trim($views_options[1]));
-                // Get the title.
-                $view_title = $view->getTitle();
-                // Render.
-                $render_content = $view->render();
-                // we put the content of #title into a seperate #markup to let
-                // drupal escape unsafe html, but allow things like links to
-                // be added in the corresponding views and blocks.
-                $render_title = [
-                  '#theme' => 'blaetter_grid_block_title',
-                  '#title' => [
-                    '#markup' => $view_title,
-                  ]
-                ];
+        $cacheability = new CacheableMetadata();
 
-                $build[] = [
-                    'title' => $render_title,
-                    'content' => $render_content,
-                ];
-            } elseif (false !== strpos($block_id, 'block|')) {
-                try {
-                    $block_id_pieces = explode('|', trim($block_id));
-                    $block = \Drupal\block\Entity\Block::load($block_id_pieces[1]);
-                    $render = \Drupal::entityTypeManager()->getViewBuilder('block')->view($block);
-                    $build[] = $render;
-                } catch (\Throwable $th) {
-                    \Drupal::logger('blaetter_formatters')->error('Error while rendereing a block in a grid block');
-                }
-            } elseif (false !== strpos($block_id, 'content|')) {
-                try {
-                    $block_id_pieces = explode('|', trim($block_id));
-                    $block = \Drupal\block_content\Entity\BlockContent::load($block_id_pieces[1]);
-                    $render = \Drupal::entityTypeManager()->getViewBuilder('block_content')->view($block);
-                    $build[] = $render;
-                } catch (\Throwable $th) {
-                    \Drupal::logger('blaetter_formatters')->error('Error while rendereing a block in a grid block');
-                }
+        foreach (preg_split('/\R/', (string) $ids) as $line) {
+            $line = trim($line);
+            if ('' === $line) {
+                continue;
+            }
+
+            if (0 === strpos($line, 'block|')) {
+                $element = $this->renderEntity('block', substr($line, strlen('block|')));
+            } elseif (0 === strpos($line, 'content|')) {
+                $element = $this->renderEntity('block_content', substr($line, strlen('content|')));
+            } elseif (false !== strpos($line, ':')) {
+                $element = $this->renderView($line, $cacheability);
+            } else {
+                $element = null;
+                $this->getLogger('blaetter_formatters')->warning(
+                    'Grid block: unknown entry "@entry"',
+                    ['@entry' => $line]
+                );
+            }
+
+            if (null !== $element) {
+                $build[] = $element;
             }
         }
 
+        $cacheability->applyTo($build);
         return $build;
+    }
+
+    /**
+     * Returns the render array of a block or content block.
+     *
+     * Blocks are rendered independent of their status, as they may be placed disabled to be used in grid blocks only.
+     *
+     * @param string $entity_type_id The entity type, block or block_content
+     * @param string $id The id of the block
+     * @return array|null The render array or null, if the block does not exist
+     */
+    protected function renderEntity($entity_type_id, $id)
+    {
+        try {
+            $entity_type_manager = \Drupal::entityTypeManager();
+            $entity = $entity_type_manager->getStorage($entity_type_id)->load(trim($id));
+            if (null === $entity) {
+                $this->getLogger('blaetter_formatters')->warning(
+                    'Grid block: @type "@id" does not exist',
+                    ['@type' => $entity_type_id, '@id' => $id]
+                );
+                return null;
+            }
+            return $entity_type_manager->getViewBuilder($entity_type_id)->view($entity);
+        } catch (\Throwable $exception) {
+            $this->getLogger('blaetter_formatters')->error(
+                'Grid block: error while rendering @type "@id": @message',
+                ['@type' => $entity_type_id, '@id' => $id, '@message' => $exception->getMessage()]
+            );
+            return null;
+        }
+    }
+
+    /**
+     * Returns the title and the content of a view display, if the current user may access it.
+     *
+     * @param string $line The view and display id, separated by a colon
+     * @param CacheableMetadata $cacheability Collects the cacheability of the access check
+     * @return array|null The render array or null, if the view does not exist or may not be accessed
+     */
+    protected function renderView($line, CacheableMetadata $cacheability)
+    {
+        [$view_id, $display_id] = array_map('trim', explode(':', $line, 2));
+        $view = Views::getView($view_id);
+        if (null === $view || !$view->setDisplay($display_id)) {
+            $this->getLogger('blaetter_formatters')->warning(
+                'Grid block: view display "@view:@display" does not exist',
+                ['@view' => $view_id, '@display' => $display_id]
+            );
+            return null;
+        }
+
+        // The access of views depends on the permissions of the user.
+        $cacheability->addCacheContexts(['user.permissions']);
+        if (!$view->access($display_id)) {
+            return null;
+        }
+
+        // we put the content of #title into a seperate #markup to let
+        // drupal escape unsafe html, but allow things like links to
+        // be added in the corresponding views and blocks.
+        return [
+            'title' => [
+                '#theme' => 'blaetter_grid_block_title',
+                '#title' => [
+                    '#markup' => $view->getTitle(),
+                ],
+            ],
+            'content' => $view->render(),
+        ];
     }
 }
