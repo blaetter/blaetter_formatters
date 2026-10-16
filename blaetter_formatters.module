@@ -460,4 +460,43 @@ function blaetter_formatters_form_alter(&$form, \Drupal\Core\Form\FormState $for
     $form['copy']['#value'] = true;
 
   }
+  // Contact forms without subject or name field (e.g. the SEPA mandate) need both for the mails of the contact module.
+  if ($form_state->getFormObject() instanceof \Drupal\contact\MessageForm) {
+    $form['#entity_builders'][] = 'blaetter_formatters_contact_message_defaults';
+  }
+}
+
+/**
+ * Entity builder for contact messages: sets subject and sender name, when the contact form has no fields for them.
+ *
+ * The contact module uses both in its mails, empty values break the mails (Html::escape() does not accept null since
+ * Drupal 11). The name is taken from the fields for first and last name, otherwise the mail address is used. The
+ * subject is the name, otherwise the label of the contact form.
+ *
+ * @param string $entity_type_id
+ * @param \Drupal\contact\MessageInterface $contact_message
+ * @param array $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @return void
+ */
+function blaetter_formatters_contact_message_defaults(
+  $entity_type_id,
+  \Drupal\contact\MessageInterface $contact_message,
+  array &$form,
+  \Drupal\Core\Form\FormStateInterface $form_state
+) {
+  $name = [];
+  foreach (['field_vorname', 'field_nachname'] as $field_name) {
+    if ($contact_message->hasField($field_name)) {
+      $name[] = trim((string) $contact_message->get($field_name)->value);
+    }
+  }
+  $name = trim(implode(' ', $name));
+
+  if ('' === trim((string) $contact_message->getSenderName())) {
+    $contact_message->setSenderName('' !== $name ? $name : (string) $contact_message->getSenderMail());
+  }
+  if ('' === trim((string) $contact_message->getSubject())) {
+    $contact_message->setSubject('' !== $name ? $name : (string) $contact_message->getContactForm()->label());
+  }
 }

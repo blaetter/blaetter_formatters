@@ -11,6 +11,7 @@ Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty
 - The copy of a SEPA mandate for the customer only shows the masked IBAN; the complete IBAN is only sent to the shop
 
 ### Bugs
+- Contact forms without subject and name field (SEPA mandate) failed on Drupal 11 with a TypeError in `Html::escape()` and sent no mails: the subject and the sender name are taken from the first and last name (otherwise the mail address and the label of the form), so the mails have the subject "[SEPA-Lastschriftmandat] First Last"
 - New embed and social media blocks showed PHP warnings in their settings form (missing default configuration)
 - The social media block stored unchecked providers as 0
 - The notification about changed addresses had no recipient without the NodeShop settings; the site mail address is used as fallback

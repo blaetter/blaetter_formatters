@@ -6,6 +6,7 @@ use Drupal\contact\ContactFormInterface;
 use Drupal\contact\MessageInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -26,6 +27,7 @@ use Psr\Log\LoggerInterface;
 #[CoversFunction('blaetter_formatters_user_update')]
 #[CoversFunction('blaetter_formatters_mask_iban')]
 #[CoversFunction('blaetter_formatters_mail_alter')]
+#[CoversFunction('blaetter_formatters_contact_message_defaults')]
 #[Group('blaetter_formatters')]
 class ModuleHooksTest extends UnitTestCase
 {
@@ -196,5 +198,60 @@ class ModuleHooksTest extends UnitTestCase
         $this->assertStringContainsString('DE89 3704 0044 0532 0130 00', $bodies['contact_page_mail']);
         $this->assertStringNotContainsString('3704 0044', $bodies['contact_page_copy']);
         $this->assertStringContainsString('DE** **** **** **** **30 00', $bodies['contact_page_copy']);
+    }
+
+    /**
+     * Tests, that contact messages without subject or sender name get them from the fields or the form.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('providerContactMessageDefaults')]
+    public function testContactMessageDefaults(
+        ?string $subject,
+        ?string $sender_name,
+        array $values,
+        ?string $expected_subject,
+        ?string $expected_name
+    ): void {
+        $form = $this->createMock(ContactFormInterface::class);
+        $form->method('label')->willReturn('SEPA-Lastschriftmandat');
+        $contact_message = $this->createMock(MessageInterface::class);
+        $contact_message->method('getSubject')->willReturn($subject);
+        $contact_message->method('getSenderName')->willReturn($sender_name);
+        $contact_message->method('getSenderMail')->willReturn('erika@example.com');
+        $contact_message->method('getContactForm')->willReturn($form);
+        $contact_message->method('hasField')->willReturnCallback(fn ($field) => array_key_exists($field, $values));
+        $contact_message->method('get')->willReturnCallback(fn ($field) => (object) ['value' => $values[$field]]);
+        if (null === $expected_subject) {
+            $contact_message->expects($this->never())->method('setSubject');
+        } else {
+            $contact_message->expects($this->once())->method('setSubject')->with($expected_subject);
+        }
+        if (null === $expected_name) {
+            $contact_message->expects($this->never())->method('setSenderName');
+        } else {
+            $contact_message->expects($this->once())->method('setSenderName')->with($expected_name);
+        }
+
+        $form_array = [];
+        blaetter_formatters_contact_message_defaults(
+            'contact_message',
+            $contact_message,
+            $form_array,
+            $this->createMock(FormStateInterface::class)
+        );
+    }
+
+    /**
+     * Data for testContactMessageDefaults().
+     */
+    public static function providerContactMessageDefaults(): array
+    {
+        $erika = ['field_vorname' => 'Erika', 'field_nachname' => 'Muster'];
+        return [
+            'SEPA mandate' => [null, null, $erika, 'Erika Muster', 'Erika Muster'],
+            'empty values' => ['', ' ', ['field_vorname' => 'Erika', 'field_nachname' => null], 'Erika', 'Erika'],
+            'no name fields' => [null, null, [], 'SEPA-Lastschriftmandat', 'erika@example.com'],
+            'empty name fields' => [null, null, ['field_vorname' => '', 'field_nachname' => ' '], 'SEPA-Lastschriftmandat', 'erika@example.com'],
+            'contact form' => ['Frage zum Abo', 'Erika M.', $erika, null, null],
+        ];
     }
 }
