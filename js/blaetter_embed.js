@@ -37,7 +37,7 @@
   }
 
   /**
-   * Binds the consent button and loads the content, if the user already agreed.
+   * Binds the consent button.
    *
    * @param {HTMLElement} button
    *   The consent button.
@@ -50,13 +50,27 @@
       const placeholder = $button.parent();
       showContent(placeholder, buildContent(placeholder));
     });
+  }
+
+  /**
+   * Loads all embedded content of the page, if the user agreed to external content.
+   */
+  function loadIfAgreed() {
     if (hasAgreedToExternalContent()) {
-      $button.trigger('click');
+      // Loaded content replaces its placeholder, so each button is only found once.
+      $('button.blaetter-media-consent, button.blaetter-embed-consent').trigger('click');
     }
   }
 
   Drupal.behaviors.blaetterEmbed = {
     attach: function (context) {
+      // The cookie banner reads the consent of the user in its own behavior, which may run after this one. So the
+      // consent is checked after all behaviors are attached, and again when the user agrees in the banner.
+      once('blaetter-embed-consent-status', 'html').forEach(function () {
+        $(document).on('eu_cookie_compliance.changeStatus eu_cookie_compliance.changePreferences', loadIfAgreed);
+      });
+      setTimeout(loadIfAgreed, 0);
+
       // Video containers with a placeholder must not keep their aspect ratio until the content is loaded.
       once('blaetter-embed-container', '.video-container', context).forEach(function (container) {
         const $container = $(container);
