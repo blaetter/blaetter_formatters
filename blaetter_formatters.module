@@ -447,13 +447,6 @@ function blaetter_formatters_user_update(EntityInterface $entity)
  * @return void
  */
 function blaetter_formatters_form_alter(&$form, \Drupal\Core\Form\FormState $form_state, $form_id) {
-  // Search form alter
-  if ('search_form' == $form_id) {
-    $moduleHandler = \Drupal::service('module_handler');
-    if ($moduleHandler->moduleExists('honeypot')) {
-      \Drupal::service('honeypot')->addFormProtection($form, $form_state, array('honeypot', 'time_restriction'));
-    }
-  }
   if ('contact_message_kuendigung_abonnement_form' == $form_id) {
     $form['actions']['submit']['#value'] = t('Submit termination');
     // always send copies to the user.

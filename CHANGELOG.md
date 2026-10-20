@@ -20,6 +20,9 @@ Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty
 - Embedded videos and other external content could not be loaded when the cookie banner script was missing, and content loaded later (e.g. via AJAX) got no consent button
 - The provider options of media were cached for the first media type and then offered for all others
 
+### Removed
+- Honeypot with time restriction on the search form of the search page (from the time of the paid Bing search): it asked users who searched again within 5 seconds to wait and made the search pages uncacheable
+
 ### Maintenance
 - Config schema for the issue formatter and the grid, social media and embed blocks
 - Dependencies in `info.yml`, license and PHP version in `composer.json`, help page describes all features
