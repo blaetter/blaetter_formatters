@@ -42,6 +42,23 @@ function blaetter_formatters_help(string $route_name, RouteMatchInterface $route
 }
 
 /**
+ * Implements hook_cron().
+ *
+ * Deletes cookie consent records older than six months (see
+ * \Drupal\blaetter_formatters\ConsentRetention).
+ */
+function blaetter_formatters_cron()
+{
+    $deleted = \Drupal::service('blaetter_formatters.consent_retention')->purge();
+    if ($deleted) {
+        \Drupal::logger('blaetter_formatters')->info(
+            'Deleted @count cookie consent records older than six months.',
+            ['@count' => $deleted]
+        );
+    }
+}
+
+/**
  * Implements hook_theme()
  *
  * @see hook_theme()

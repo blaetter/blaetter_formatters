@@ -6,6 +6,9 @@ Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty
 
 ## Unreleased
 
+### Features
+- Cookie consent records of EU Cookie Compliance (with IP address) are deleted after six months: a cron job deletes the older records in batches (at most 50,000 per run, `ConsentRetention`); the module itself never deleted them
+
 ### Security
 - Grid blocks only show views the current user may access
 - The copy of a SEPA mandate for the customer only shows the masked IBAN; the complete IBAN is only sent to the shop

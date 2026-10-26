@@ -1,0 +1,4 @@
+services:
+  blaetter_formatters.consent_retention:
+    class: Drupal\blaetter_formatters\ConsentRetention
+    arguments: ['@database', '@datetime.time']
