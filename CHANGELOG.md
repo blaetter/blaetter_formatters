@@ -14,6 +14,7 @@ Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty
 - The copy of a SEPA mandate for the customer only shows the masked IBAN; the complete IBAN is only sent to the shop
 
 ### Bugs
+- Embedded videos in texts with the format Full HTML can be loaded again: "Convert line breaks" runs after "Embed media" and may wrap the consent button in a paragraph, so the script now finds the placeholder with `closest()` instead of the parent element (`JSON.parse` error, content not loaded after the consent in the cookie banner)
 - Embedded videos and other external content were not loaded automatically after the user agreed to external content in the cookie banner: the consent was checked before the cookie banner had read it; it is checked after all behaviors are attached, and the content is loaded right away when the user agrees in the banner (without reload)
 - Contact forms without subject and name field (SEPA mandate) failed on Drupal 11 with a TypeError in `Html::escape()` and sent no mails: the subject and the sender name are taken from the first and last name (otherwise the mail address and the label of the form), so the mails have the subject "[SEPA-Lastschriftmandat] First Last"
 - New embed and social media blocks showed PHP warnings in their settings form (missing default configuration)

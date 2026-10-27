@@ -47,8 +47,11 @@
   function initConsentButton(button, buildContent) {
     const $button = $(button);
     $button.on('click', function () {
-      const placeholder = $button.parent();
-      showContent(placeholder, buildContent(placeholder));
+      // Not the parent: text filters (e.g. "Convert line breaks" after "Embed media") may wrap the button in a <p>.
+      const placeholder = $button.closest('.blaetter-embed');
+      if (placeholder.length) {
+        showContent(placeholder, buildContent(placeholder));
+      }
     });
   }
 
