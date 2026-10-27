@@ -4,7 +4,7 @@ All notable changes to this module, grouped by topic. New entries go into the "U
 
 Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty sections).
 
-## Unreleased
+## 2026-10-27
 
 ### Features
 - Cookie consent records of EU Cookie Compliance (with IP address) are deleted after six months: a cron job deletes the older records in batches (at most 50,000 per run, `ConsentRetention`); the module itself never deleted them
