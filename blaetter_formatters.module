@@ -426,8 +426,9 @@ function blaetter_formatters_user_update(EntityInterface $entity)
           '@name changed from "@orig_value" to "@new_value"',
           [
             '@name' => $name,
-            '@orig_value' => $original->get($key)->value,
-            '@new_value' => $entity->get($key)->value,
+            // An empty field has the value NULL, placeholders only take strings.
+            '@orig_value' => (string) $original->get($key)->value,
+            '@new_value' => (string) $entity->get($key)->value,
           ]
         ) . PHP_EOL;
       }

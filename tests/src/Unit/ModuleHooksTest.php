@@ -129,6 +129,29 @@ class ModuleHooksTest extends UnitTestCase
     }
 
     /**
+     * Tests, that an empty field before or after the change does not break the mail.
+     *
+     * Html::escape() only takes strings: an empty value caused a TypeError on
+     * saving the account, the shop got no mail and the customer an error page.
+     */
+    public function testChangedAddressWithEmptyFieldIsSent(): void
+    {
+        $this->setUpContainer('abo@blaetter.de');
+
+        blaetter_formatters_user_update(
+            $this->createUser(['field_phone' => '030 123'], $this->createUser(['field_city' => 'Berlin']))
+        );
+        blaetter_formatters_user_update(
+            $this->createUser([], $this->createUser(['field_street_addon' => 'Hinterhaus']))
+        );
+
+        $this->assertCount(2, $this->mails);
+        $this->assertStringContainsString('phone changed from "" to "030 123"', $this->mails[0][1]);
+        $this->assertStringContainsString('city changed from "Berlin" to ""', $this->mails[0][1]);
+        $this->assertStringContainsString('street addon changed from "Hinterhaus" to ""', $this->mails[1][1]);
+    }
+
+    /**
      * Tests, that no mail is sent, if no address field changed.
      */
     public function testUnchangedAddressIsNotSent(): void

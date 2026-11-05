@@ -4,6 +4,11 @@ All notable changes to this module, grouped by topic. New entries go into the "U
 
 Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty sections).
 
+## Unreleased
+
+### Bugs
+- Saving an account failed with a TypeError in `Html::escape()` when an address field was filled that had been empty, or was emptied: the customer got an error page and the shop no mail about the change, although the change was saved. Empty values are now empty text in the mail.
+
 ## 2026-10-27
 
 ### Features
