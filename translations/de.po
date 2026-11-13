@@ -1,0 +1,18 @@
+# German translation of Blätter Formatters.
+msgid ""
+msgstr ""
+"Project-Id-Version: blaetter_formatters\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Please enter a valid postcode."
+msgstr "Bitte geben Sie eine gültige Postleitzahl ein."
+
+msgid "Please enter a valid subscription or customer number (it starts with a digit) or leave the field empty."
+msgstr "Bitte geben Sie eine gültige Abo- oder Kundennummer ein (sie beginnt mit einer Ziffer) oder lassen Sie das Feld leer."
+
+msgid "Please do not enter links or mail addresses here."
+msgstr "Bitte geben Sie hier keine Links oder E-Mail-Adressen ein."

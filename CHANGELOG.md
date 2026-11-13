@@ -6,6 +6,11 @@ Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty
 
 ## Unreleased
 
+### Security
+- Bots used the cancellation form to send its copy (always sent to the entered address) to strangers. The cancellation and SEPA mandate forms now reject implausible values with an error at the field, before any mail is sent: the postcode needs 5 digits in Germany, 4 in Austria and Switzerland and at least one digit elsewhere; a subscription or customer number, when entered, starts with a digit; names and address must not contain links or mail addresses, the message no links. Rejections are logged with form and rule, without the entered data. German texts in the new `translations/de.po` (interface translation project).
+- The mails of the cancellation and SEPA mandate forms label the number "Abo- oder Kundennummer" (was "Kundennummer"), like the field.
+- The copy of a cancellation for the customer leaves out the free text "Nachricht", which only goes to the shop; a link in it still stops both mails.
+
 ### Bugs
 - Saving an account failed with a TypeError in `Html::escape()` when an address field was filled that had been empty, or was emptied: the customer got an error page and the shop no mail about the change, although the change was saved. Empty values are now empty text in the mail.
 

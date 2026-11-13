@@ -13,3 +13,6 @@ dependencies:
   - drupal:taxonomy
   - drupal:user
   - drupal:views
+
+'interface translation project': blaetter_formatters
+'interface translation server pattern': modules/contrib/blaetter_formatters/translations/%language.po

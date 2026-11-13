@@ -236,7 +236,7 @@ function blaetter_formatters_mail_alter(&$message) {
           $iban = (string) $contact_message->get('field_iban')->value;
           $new_body .= ('contact_page_copy' == $message['id'] ? blaetter_formatters_mask_iban($iban) : $iban)
             . PHP_EOL . PHP_EOL;
-          $new_body .= 'Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Abo- oder Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Ermächtigung des Einzugs: ' . $ermaechtigung . PHP_EOL;
           $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL;
           // we need to check all fields for spam so use $new_body for that
@@ -261,17 +261,22 @@ function blaetter_formatters_mail_alter(&$message) {
           $new_body .= $contact_message->get('field_postleitzahl')->value . ' ';
           $new_body .= $contact_message->get('field_stadt')->value . PHP_EOL;
           $new_body .= $contact_message->get('field_land')->value . PHP_EOL . PHP_EOL;
-          $new_body .= 'Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
+          $new_body .= 'Abo- oder Kundennummer: ' . $contact_message->get('field_kundennummer')->value . PHP_EOL . PHP_EOL;
           $new_body .= 'Gewünschter Kündigungszeitraum: ' . $contact_message->get('field_kuendigungszeitraum')->value . PHP_EOL . PHP_EOL;
-          $new_body .= 'Nachricht:' . PHP_EOL;
-          $new_body .= $contact_message->get('field_nachricht')->value . PHP_EOL . PHP_EOL;
+          // The free text only goes to the shop: the copy is sent to the entered address, which need not belong to
+          // the sender, so it must not carry text of their choice.
+          $nachricht = (string) $contact_message->get('field_nachricht')->value;
+          if ('contact_page_mail' == $message['id']) {
+            $new_body .= 'Nachricht:' . PHP_EOL;
+            $new_body .= $nachricht . PHP_EOL . PHP_EOL;
+          }
           $new_body .= 'Zustimmung Datenschutzbedingungen: ' . $datenschutzhinweise . PHP_EOL . PHP_EOL;
           $new_body .= 'Zeitpunkt des Eingangs der Kündigung: ' . $cancel_date . PHP_EOL . PHP_EOL . PHP_EOL;
           $new_body .= 'Bitte speichern Sie sich diese Nachricht als Nachweis über den Kündigungseingang ab.' . PHP_EOL . PHP_EOL;
           $new_body .= 'Vielen Dank, Ihre »Blätter«';
 
-          // we need to check all fields for spam so use $new_body for that
-          $is_spam = blaetter_formatters_check_for_spam($new_body);
+          // we need to check all fields for spam (the free text as well, also for the copy without it)
+          $is_spam = blaetter_formatters_check_for_spam($new_body . PHP_EOL . $nachricht);
 
           if (false == $is_spam) {
               //create a message for the end user containing date and time of the cancellation and give further instructions
@@ -380,6 +385,98 @@ function blaetter_formatters_check_for_spam($body)
 }
 
 /**
+ * Checks the address fields of the cancellation and SEPA mandate forms for values no customer would enter.
+ *
+ * Rules: the postcode has 5 digits in Germany and 4 in Austria and Switzerland (an optional country prefix like "D-"
+ * is allowed) and contains at least one digit elsewhere; a subscription or customer number, when entered, starts with
+ * a digit; names and address contain no links and no mail addresses, the message no links.
+ *
+ * @param array $values
+ *   Field values keyed by field name (field_vorname, field_nachname, field_strasse_und_hausnummer,
+ *   field_postleitzahl, field_stadt, field_land, field_kundennummer, field_nachricht); missing fields are skipped.
+ *
+ * @return array
+ *   The violated rules keyed by field name: 'postcode', 'customer_number' or 'link'.
+ */
+function blaetter_formatters_check_contact_address(array $values): array
+{
+    $errors = [];
+    $value = fn (string $field) => trim((string) ($values[$field] ?? ''));
+
+    if (array_key_exists('field_postleitzahl', $values)) {
+        $postcode = $value('field_postleitzahl');
+        $country = mb_strtolower($value('field_land'));
+        $patterns = [
+            '/^(d-?\s*)?\d{5}$/i' => ['deutschland', 'germany', 'de', 'd', 'brd', 'bundesrepublik deutschland'],
+            '/^(a-?\s*)?\d{4}$/i' => ['österreich', 'oesterreich', 'austria', 'at', 'a'],
+            '/^(ch-?\s*)?\d{4}$/i' => ['schweiz', 'switzerland', 'suisse', 'svizzera', 'ch'],
+        ];
+        $pattern = '/\d/';
+        foreach ($patterns as $country_pattern => $names) {
+            if (in_array($country, $names, true)) {
+                $pattern = $country_pattern;
+            }
+        }
+        if (!preg_match($pattern, $postcode)) {
+            $errors['field_postleitzahl'] = 'postcode';
+        }
+    }
+
+    if ('' !== $value('field_kundennummer') && !preg_match('/^\d/', $value('field_kundennummer'))) {
+        $errors['field_kundennummer'] = 'customer_number';
+    }
+
+    $link = '~(https?://|www\.)~i';
+    foreach (['field_vorname', 'field_nachname', 'field_strasse_und_hausnummer', 'field_stadt', 'field_nachricht'] as $field) {
+        $text = $value($field);
+        $mail = 'field_nachricht' !== $field && str_contains($text, '@');
+        if (!isset($errors[$field]) && ($mail || preg_match($link, $text))) {
+            $errors[$field] = 'link';
+        }
+    }
+
+    return $errors;
+}
+
+/**
+ * Validation handler of the cancellation and SEPA mandate forms, see blaetter_formatters_check_contact_address().
+ *
+ * @param array $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @return void
+ */
+function blaetter_formatters_contact_address_validate(array &$form, \Drupal\Core\Form\FormStateInterface $form_state)
+{
+    $values = [];
+    foreach ([
+        'field_vorname', 'field_nachname', 'field_strasse_und_hausnummer', 'field_postleitzahl', 'field_stadt',
+        'field_land', 'field_kundennummer', 'field_nachricht',
+    ] as $field) {
+        if ($form_state->hasValue($field)) {
+            $values[$field] = $form_state->getValue([$field, 0, 'value']);
+        }
+    }
+
+    $messages = [
+        'postcode' => t('Please enter a valid postcode.'),
+        'customer_number' => t('Please enter a valid subscription or customer number (it starts with a digit) or leave the field empty.'),
+        'link' => t('Please do not enter links or mail addresses here.'),
+    ];
+    $errors = blaetter_formatters_check_contact_address($values);
+    foreach ($errors as $field => $rule) {
+        $form_state->setErrorByName($field . '][0][value', $messages[$rule]);
+    }
+
+    if ($errors) {
+        // Only form and rules, no entered data.
+        \Drupal::logger('blaetter_formatters')->notice('Rejected @form: implausible values (@rules).', [
+            '@form' => $form_state->getFormObject()->getFormId(),
+            '@rules' => implode(', ', array_unique($errors)),
+        ]);
+    }
+}
+
+/**
  * Implements hook_ENTITY_TYPE_update
  *
  * Checks for updates on the user account and sends mail to site owner in case the user changed its address
@@ -470,6 +567,11 @@ function blaetter_formatters_form_alter(&$form, \Drupal\Core\Form\FormState $for
     // always send copies to the user.
     $form['copy']['#value'] = true;
 
+  }
+  // Bots fill these forms with random letters; as the cancellation sends a copy to the entered address, implausible
+  // addresses are rejected before any mail is sent.
+  if (in_array($form_id, ['contact_message_kuendigung_abonnement_form', 'contact_message_sepa_lastschriftmandat_form'], true)) {
+    $form['#validate'][] = 'blaetter_formatters_contact_address_validate';
   }
   // Contact forms without subject or name field (e.g. the SEPA mandate) need both for the mails of the contact module.
   if ($form_state->getFormObject() instanceof \Drupal\contact\MessageForm) {
