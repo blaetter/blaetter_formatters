@@ -6,6 +6,9 @@ Sections per version: Features, Security, Bugs, Removed, Maintenance (omit empty
 
 ## Unreleased
 
+### Features
+- New token `[node:blaetter_issue]`: the issue (content type `ausgabe`) an article belongs to in the book outline, with all node tokens of the issue behind it, e.g. `[node:blaetter_issue:field_jahr]`. The Pathauto pattern of articles can use it instead of `[node:book:parent:…]`: Token 8.x-1.18 no longer provides the book tokens once Book implements its own (Book 2.0.4 only provides `[node:book:parents:join-path]`), and Token 2.0 removes them. For all 14,337 articles of the local database both patterns give the same alias. German labels in `translations/de.po`.
+
 ### Security
 - Bots used the cancellation form to send its copy (always sent to the entered address) to strangers. The cancellation and SEPA mandate forms now reject implausible values with an error at the field, before any mail is sent: the postcode needs 5 digits in Germany, 4 in Austria and Switzerland and at least one digit elsewhere; a subscription or customer number, when entered, starts with a digit; names and address must not contain links or mail addresses, the message no links. Rejections are logged with form and rule, without the entered data. German texts in the new `translations/de.po` (interface translation project).
 - The mails of the cancellation and SEPA mandate forms label the number "Abo- oder Kundennummer" (was "Kundennummer"), like the field.

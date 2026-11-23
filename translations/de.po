@@ -16,3 +16,10 @@ msgstr "Bitte geben Sie eine gültige Abo- oder Kundennummer ein (sie beginnt mi
 
 msgid "Please do not enter links or mail addresses here."
 msgstr "Bitte geben Sie hier keine Links oder E-Mail-Adressen ein."
+
+msgctxt "Blaetter issue"
+msgid "Issue"
+msgstr "Ausgabe"
+
+msgid "The issue (content type Ausgabe) the article belongs to in the book outline."
+msgstr "Die Ausgabe (Inhaltstyp Ausgabe), zu der der Artikel in der Buchgliederung gehört."

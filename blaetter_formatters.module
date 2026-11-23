@@ -7,7 +7,9 @@
 use \Drupal\Core\Entity\EntityInterface;
 use \Drupal\Core\Entity\FieldableEntityInterface;
 use \Drupal\Core\Field\FieldStorageDefinitionInterface;
+use \Drupal\Core\Render\BubbleableMetadata;
 use \Drupal\Core\Routing\RouteMatchInterface;
+use \Drupal\node\NodeInterface;
 
 /**
  * Implements hook_help()
@@ -612,4 +614,77 @@ function blaetter_formatters_contact_message_defaults(
   if ('' === trim((string) $contact_message->getSubject())) {
     $contact_message->setSubject('' !== $name ? $name : (string) $contact_message->getContactForm()->label());
   }
+}
+
+/**
+ * Returns the issue an article belongs to.
+ *
+ * The issue is the root of the article's book outline, a node of the type
+ * "ausgabe". The book outline is provided by the Book module on node load
+ * (and by the node form before saving) as $node->book.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The article.
+ *
+ * @return \Drupal\node\NodeInterface|null
+ *   The issue, or NULL if the node is not part of an issue or is the issue.
+ */
+function blaetter_formatters_issue(NodeInterface $node): ?NodeInterface
+{
+  $book = $node->book ?? NULL;
+  if (empty($book['bid']) || (int) $book['bid'] === (int) $node->id()) {
+    return NULL;
+  }
+  $issue = \Drupal::entityTypeManager()->getStorage('node')->load($book['bid']);
+  return $issue instanceof NodeInterface && $issue->bundle() === 'ausgabe' ? $issue : NULL;
+}
+
+/**
+ * Implements hook_token_info().
+ *
+ * Provides [node:blaetter_issue], the issue of an article, with all node
+ * tokens of the issue behind it, e.g. [node:blaetter_issue:field_jahr]. It is
+ * used by the Pathauto pattern of articles and does not depend on the book
+ * tokens of Token or Book.
+ */
+function blaetter_formatters_token_info(): array
+{
+  return [
+    'tokens' => [
+      'node' => [
+        'blaetter_issue' => [
+          'name' => t('Issue', [], ['context' => 'Blaetter issue']),
+          'description' => t('The issue (content type Ausgabe) the article belongs to in the book outline.'),
+          'type' => 'node',
+        ],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function blaetter_formatters_tokens($type, array $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata): array
+{
+  $replacements = [];
+  if ($type !== 'node' || empty($data['node']) || !$data['node'] instanceof NodeInterface) {
+    return $replacements;
+  }
+  $issue_tokens = \Drupal::token()->findWithPrefix($tokens, 'blaetter_issue');
+  if (!isset($tokens['blaetter_issue']) && !$issue_tokens) {
+    return $replacements;
+  }
+  $issue = blaetter_formatters_issue($data['node']);
+  if (!$issue) {
+    return $replacements;
+  }
+  $bubbleable_metadata->addCacheableDependency($issue);
+  if (isset($tokens['blaetter_issue'])) {
+    $replacements[$tokens['blaetter_issue']] = $issue->label();
+  }
+  if ($issue_tokens) {
+    $replacements += \Drupal::token()->generate('node', $issue_tokens, ['node' => $issue], $options, $bubbleable_metadata);
+  }
+  return $replacements;
 }
